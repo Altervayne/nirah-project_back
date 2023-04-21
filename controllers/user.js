@@ -58,7 +58,7 @@ exports.logIn = (request, response, next) => {
 exports.requestFriend = (request, response, next) => {
     const userId = request.auth.userId
 
-    User.findOne({ username: request.body.requestedUser })
+    User.findOne({ username: request.params.id })
         .then((targetUser) => {
             const requestedUser = targetUser
 
