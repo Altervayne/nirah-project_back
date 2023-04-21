@@ -4,6 +4,49 @@ const bcrypt = require('bcrypt')
 
 
 
+exports.getCurrentUserInfo = (request, response, next) => {
+    const userId = request.auth.userId
+
+    User.findOne({ _id: userId })
+        .then((currentUser) => {
+            const currentUserInfo = {
+                username: currentUser.username,
+                friendsList: currentUser.friendsList,
+                requestsSent: currentUser.requestsSent,
+                requestsReceived: currentUser.requestsReceived
+            }
+            response.status(201).json({ currentUserInfo })
+        })
+        .catch((error) => {response.status(400).json({ error })})
+}
+
+
+
+exports.getFriendsStatus = (request, response, next) => {
+    const userId = request.auth.userId
+
+    User.findOne({ _id: userId })
+        .then((currentUser) => {
+            const friendsList = currentUser.friendsList
+            const friendsStatusesArray = []
+
+            for(friendId in friendsList) {
+                User.findOne({ _id: friendId })
+                    .then((friend) => {
+                        const friendStatus = {
+                            username: friend.username,
+                            isOnline: friend.isOnline,
+                            currentRoom: friend.currentRoom
+                        }
+
+                        friendsStatusesArray.push(friendStatus)
+                    })
+            }
+        })
+}
+
+
+
 exports.signUp = (request, response, next) => {
     bcrypt.hash(request.body.password, 10)
         .then(hash => {
