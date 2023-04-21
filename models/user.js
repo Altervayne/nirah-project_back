@@ -10,7 +10,8 @@ const userSchema = mongoose.Schema({
     friendsList: { type: [Number], required: true },
     requestsReceived: { type: [Number], required: true },
     requestsSent: { type: [Number], required: true },
-    isOnline: { type: Boolean, required: true }
+    isOnline: { type: Boolean, required: true },
+    currentRoom: { type: Number, required: true }
 })
 
 
