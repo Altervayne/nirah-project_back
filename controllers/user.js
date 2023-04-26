@@ -73,7 +73,6 @@ exports.signUp = (request, response, next) => {
                     User.findOne({ email: request.body.email })
                     .then((user) => {
                         response.status(200).json({
-                            username: user.username,
                             token: jwtoken.sign(
                                 { userId: user._id },
                                 process.env.TOKENKEY,
@@ -105,7 +104,6 @@ exports.logIn = (request, response, next) => {
 
 
                     response.status(200).json({
-                        username: user.username,
                         token: jwtoken.sign(
                             { userId: user._id },
                             process.env.TOKENKEY,
