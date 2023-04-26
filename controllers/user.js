@@ -41,8 +41,12 @@ exports.getFriendsStatus = (request, response, next) => {
 
                         friendsStatusesArray.push(friendStatus)
                     })
+                    .catch((error) => {response.status(400).json({ error })})
             }
+
+            response.status(201).json({ friendsStatusesArray })
         })
+        .catch((error) => {response.status(400).json({ error })})
 }
 
 
@@ -61,10 +65,22 @@ exports.signUp = (request, response, next) => {
                 currentRoom: null
             })
             user.save()
-                .then(() => response.status(201).json({ message: 'Utilisateur créé !' }))
+                .then(() => {
+                    User.findOne({ email: request.body.email })
+                    .then((user) => {
+                        response.status(200).json({
+                            username: user.username,
+                            token: jwtoken.sign(
+                                { userId: user._id },
+                                '123456789',
+                                { expiresIn: '24h' }
+                            )
+                        })
+                    })
+                    .catch((error) => response.status(500).json({ error }))
+                })
                 .catch((error) => response.status(400).json({ error }))
         })
-        .catch((error) => response.status(500).json({ error }))
 }
 
 
@@ -85,7 +101,7 @@ exports.logIn = (request, response, next) => {
 
 
                     response.status(200).json({
-                        userId: user._id,
+                        username: user.username,
                         token: jwtoken.sign(
                             { userId: user._id },
                             '123456789',
@@ -96,6 +112,7 @@ exports.logIn = (request, response, next) => {
                 .catch((error) => response.status(500).json({ error }))
         })
 }
+
 
 
 exports.requestFriend = (request, response, next) => {

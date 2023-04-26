@@ -1,6 +1,10 @@
 const http = require('http')
 const app = require('./app')
 
+if (process.env.NODE_ENV !== 'production') {
+    require('dotenv').config();
+}
+
 
 
 const normalizePort = (port) => {
@@ -15,7 +19,7 @@ const normalizePort = (port) => {
     return false
 }
 
-const port = normalizePort(process.env.PORT || '3000')
+const port = normalizePort(process.env.PORT || '4200')
 app.set('port', port)
 
 
