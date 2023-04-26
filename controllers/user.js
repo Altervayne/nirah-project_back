@@ -2,6 +2,10 @@ const User = require('../models/user')
 const jwtoken = require('jsonwebtoken')
 const bcrypt = require('bcrypt')
 
+if (process.env.NODE_ENV !== 'production') {
+    require('dotenv').config();
+}
+
 
 
 exports.getCurrentUserInfo = (request, response, next) => {
@@ -72,7 +76,7 @@ exports.signUp = (request, response, next) => {
                             username: user.username,
                             token: jwtoken.sign(
                                 { userId: user._id },
-                                '123456789',
+                                process.env.TOKENKEY,
                                 { expiresIn: '24h' }
                             )
                         })
@@ -104,7 +108,7 @@ exports.logIn = (request, response, next) => {
                         username: user.username,
                         token: jwtoken.sign(
                             { userId: user._id },
-                            '123456789',
+                            process.env.TOKENKEY,
                             { expiresIn: '24h' }
                         )
                     })

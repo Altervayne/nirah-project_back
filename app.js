@@ -3,10 +3,20 @@ const mongoose = require('mongoose')
 const path = require('path')
 const userRoutes = require('./routes/user')
 
+if (process.env.NODE_ENV !== 'production') {
+    require('dotenv').config();
+}
+
 const app = express();
 
 
 
+const mongoUri = `mongodb+srv://${process.env.MONGODBID}:${process.env.MONGODBPASSWORD}@project-nirah.qttgzaa.mongodb.net/?retryWrites=true&w=majority`
+mongoose.connect(mongoUri,
+    {   useNewUrlParser: true,
+        useUnifiedTopology: true })
+        .then(() => console.log('Connection to MongoDB succeeded'))
+        .catch(( error ) => console.log( error ))
 
 app.use(express.json())
 
