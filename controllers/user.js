@@ -66,7 +66,7 @@ exports.signUp = (request, response, next) => {
                 requestsReceived: [],
                 requestsSent: [],
                 isOnline: false,
-                currentRoom: null
+                currentRoom: 0,
             })
             user.save()
                 .then(() => {
@@ -82,7 +82,7 @@ exports.signUp = (request, response, next) => {
                     })
                     .catch((error) => response.status(500).json({ error }))
                 })
-                .catch((error) => response.status(400).json({ error }))
+                .catch((error) => response.status(400).json({ error, request }))
         })
 }
 
@@ -155,4 +155,12 @@ exports.requestFriend = (request, response, next) => {
                     response.status(200).json({ message: "Demande d'ajout envoyée avec succès !"})
                 )
         })
+}
+
+
+
+exports.validatePreflight = (request, response, next) => {
+    response.status(200).json({
+        message: 'Preflight request validated'
+    })
 }
