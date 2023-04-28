@@ -7,11 +7,11 @@ if (process.env.NODE_ENV !== 'production') {
 module.exports = (request, response, next) => {
     try {
         const token = request.cookies.token
+        console.log(token)
 
-        if (!token) {
-            throw new Error('Authentication failed!')
-        }
-        const decodedToken = jwt.verify(token, process.env.TOKENKEY, { algorithms: ['HS256'] })
+        const decodedToken = jwtoken.verify(token, process.env.TOKENKEY, { algorithms: ['HS256'] })
+        console.log(decodedToken)
+
         const userId = decodedToken.userId
         request.auth = {
             userId: userId,
@@ -21,4 +21,4 @@ module.exports = (request, response, next) => {
     } catch (error) {
         response.status(401).json({ error: 'Authentication failed!' })
     }
-  };
+}

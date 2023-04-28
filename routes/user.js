@@ -7,6 +7,7 @@ const userControl = require('../controllers/user')
 
 router.get('/user', auth,  userControl.getCurrentUserInfo)
 router.get('/friend/:id', auth, userControl.getFriendsStatus)
+router.get('/logout', userControl.logOut)
 router.post('/signup', userControl.signUp)
 router.post('/login', userControl.logIn)
 router.post('/sendRequest/:id', auth, userControl.requestFriend)

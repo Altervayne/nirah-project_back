@@ -55,6 +55,12 @@ exports.getFriendsStatus = (request, response, next) => {
 
 
 
+exports.logOut = (request, response) => {
+    response.clearCookie('token').json({ message: 'User logged out' })
+}
+
+
+
 exports.signUp = (request, response, next) => {
     bcrypt.hash(request.body.password, 10)
         .then(hash => {
@@ -77,7 +83,7 @@ exports.signUp = (request, response, next) => {
                             process.env.TOKENKEY,
                             { expiresIn: '24h', algorithm: 'HS256' })
     
-                        response.cookie('token', token, { httpOnly: true })
+                        response.cookie('token', token, { httpOnly: true, sameSite: 'strict' })
                         response.status(200).json({ message: "User succesfully created and logged in!" })
                     })
                     .catch((error) => response.status(500).json({ error }))
@@ -107,7 +113,9 @@ exports.logIn = (request, response, next) => {
                         process.env.TOKENKEY,
                         { expiresIn: '24h', algorithm: 'HS256' })
 
-                    response.cookie('token', token, { httpOnly: true })
+                    console.log(token)
+
+                    response.cookie('token', token, { httpOnly: true, sameSite: 'strict' })
                     response.status(200).json({ message: "User succesfully logged in!" })
                 })
                 .catch((error) => response.status(500).json({ error }))
