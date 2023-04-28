@@ -113,7 +113,6 @@ exports.logIn = (request, response, next) => {
                         process.env.TOKENKEY,
                         { expiresIn: '24h', algorithm: 'HS256' })
 
-                    console.log(token)
 
                     response.cookie('token', token, { httpOnly: true, sameSite: 'strict' })
                     response.status(200).json({ message: "User succesfully logged in!" })
