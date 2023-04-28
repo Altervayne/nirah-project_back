@@ -6,9 +6,9 @@ if (process.env.NODE_ENV !== 'production') {
 
 module.exports = (request, response, next) => {
     try {
-        const token = resquest.headers.authorization.split(' ')[1]
-        const decodedToken = jwtoken.verify(token, process.env.TOKENKEY)
-        const userId = decodedToken.userId
+        const token = request.headers.authorization.split(' ')[1]
+        const decodedToken = jwtoken.verify(token, process.env.TOKENKEY, { algorithms: ['HS256'] })
+        const userId = decodedToken.userId       
 
         request.auth = {
             userId: userId
@@ -16,7 +16,6 @@ module.exports = (request, response, next) => {
 
         next()
     }
-
     catch(error) {
         response.status(401).json({ error })
     }

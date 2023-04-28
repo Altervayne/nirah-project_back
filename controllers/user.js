@@ -107,7 +107,7 @@ exports.logIn = (request, response, next) => {
                         token: jwtoken.sign(
                             { userId: user._id },
                             process.env.TOKENKEY,
-                            { expiresIn: '24h' }
+                            { expiresIn: '24h', algorithm: 'HS256' }
                         )
                     })
                 })
