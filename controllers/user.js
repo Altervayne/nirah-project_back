@@ -19,7 +19,7 @@ exports.getCurrentUserInfo = (request, response, next) => {
                 requestsSent: currentUser.requestsSent,
                 requestsReceived: currentUser.requestsReceived
             }
-            response.status(201).json({ currentUserInfo })
+            response.status(201).json( currentUserInfo )
         })
         .catch((error) => {response.status(400).json({ error })})
 }
@@ -72,13 +72,13 @@ exports.signUp = (request, response, next) => {
                 .then(() => {
                     User.findOne({ email: request.body.email })
                     .then((user) => {
-                        response.status(200).json({
-                            token: jwtoken.sign(
-                                { userId: user._id },
-                                process.env.TOKENKEY,
-                                { expiresIn: '24h' }
-                            )
-                        })
+                        const token = jwtoken.sign(
+                            { userId: user._id },
+                            process.env.TOKENKEY,
+                            { expiresIn: '24h', algorithm: 'HS256' })
+    
+                        response.cookie('token', token, { httpOnly: true })
+                        response.status(200).json({ message: "User succesfully created and logged in!" })
                     })
                     .catch((error) => response.status(500).json({ error }))
                 })
@@ -102,14 +102,13 @@ exports.logIn = (request, response, next) => {
                         return response.status(401).json({ message: 'Adresse mail ou mot de passe incorrect.' })
                     }
 
+                    const token = jwtoken.sign(
+                        { userId: user._id },
+                        process.env.TOKENKEY,
+                        { expiresIn: '24h', algorithm: 'HS256' })
 
-                    response.status(200).json({
-                        token: jwtoken.sign(
-                            { userId: user._id },
-                            process.env.TOKENKEY,
-                            { expiresIn: '24h', algorithm: 'HS256' }
-                        )
-                    })
+                    response.cookie('token', token, { httpOnly: true })
+                    response.status(200).json({ message: "User succesfully logged in!" })
                 })
                 .catch((error) => response.status(500).json({ error }))
         })
