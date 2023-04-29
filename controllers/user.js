@@ -44,19 +44,27 @@ exports.getFriendsStatuses = async (request, response, next) => {
 
 
 
-exports.logOut = (request, response) => {
+exports.logOut = async (request, response) => {
     const userId = request.auth.userId
 
-    User.findOne({ _id: userId })
-        .then((currentUser) => {
-            currentUser.isOnline = false
-            currentUser.save()
+    try {
+        const currentUser = await User.findOne({ _id: userId })
 
-            response.clearCookie('token').json({ message: 'User logged out' })
-        })
-        .catch((error) => {
-            response.status(400).json({ error })
-        })
+        currentUser.isOnline = false
+        await currentUser.save()
+
+    } catch (error) {
+        response.status(400).json({ error })
+    }
+
+    try {
+        response.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate')
+        response.clearCookie('token')
+        response.status(200).json({ message: 'User logged out' })
+    } catch {
+        console.log(error)
+        response.status(400).json({ error })
+    }
 }
 
 
@@ -83,6 +91,8 @@ exports.signUp = (request, response, next) => {
                             process.env.TOKENKEY,
                             { expiresIn: '24h', algorithm: 'HS256' })
     
+                        
+                        response.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate')
                         response.cookie('token', token, { httpOnly: true, sameSite: 'strict' })
                         response.status(200).json({ message: "User succesfully created and logged in!" })
                     })
@@ -115,6 +125,8 @@ exports.logIn = (request, response, next) => {
                     user.isOnline = true
                     user.save()
 
+
+                    response.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate')
                     response.cookie('token', token, { httpOnly: true, sameSite: 'strict' })
                     response.status(200).json({ message: "User succesfully logged in!" })
                 })

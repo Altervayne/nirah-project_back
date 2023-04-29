@@ -21,8 +21,7 @@ exports.http = async (request, response, next) => {
             userId: userId,
             username: username
         }
-
-        console.log(request.auth)
+        
 
         next()
     } catch (error) {
