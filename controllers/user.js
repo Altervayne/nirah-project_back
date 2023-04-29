@@ -15,9 +15,6 @@ exports.getCurrentUserInfo = (request, response, next) => {
         .then((currentUser) => {
             const currentUserInfo = {
                 username: currentUser.username,
-                friendsList: currentUser.friendsList,
-                requestsSent: currentUser.requestsSent,
-                requestsReceived: currentUser.requestsReceived
             }
             response.status(201).json( currentUserInfo )
         })
@@ -26,37 +23,40 @@ exports.getCurrentUserInfo = (request, response, next) => {
 
 
 
-exports.getFriendsStatus = (request, response, next) => {
+exports.getFriendsStatuses = async (request, response, next) => {
     const userId = request.auth.userId
 
-    User.findOne({ _id: userId })
-        .then((currentUser) => {
-            const friendsList = currentUser.friendsList
-            const friendsStatusesArray = []
-
-            for(friendId in friendsList) {
-                User.findOne({ _id: friendId })
-                    .then((friend) => {
-                        const friendStatus = {
-                            username: friend.username,
-                            isOnline: friend.isOnline,
-                            currentRoom: friend.currentRoom
-                        }
-
-                        friendsStatusesArray.push(friendStatus)
-                    })
-                    .catch((error) => {response.status(400).json({ error })})
+    try {
+        const currentUser = await User.findOne({ _id: userId }).populate('friendsList', 'username isOnline currentRoom')
+        const friendsStatusesArray = currentUser.friendsList.map((friend) => {
+            return {
+                username: friend.username,
+                isOnline: friend.isOnline,
+                currentRoom: friend.currentRoom
             }
-
-            response.status(201).json({ friendsStatusesArray })
         })
-        .catch((error) => {response.status(400).json({ error })})
+
+        response.status(200).json({ friendsStatusesArray })
+    } catch (error) {
+        response.status(400).json({ error })
+    }
 }
 
 
 
 exports.logOut = (request, response) => {
-    response.clearCookie('token').json({ message: 'User logged out' })
+    const userId = request.auth.userId
+
+    User.findOne({ _id: userId })
+        .then((currentUser) => {
+            currentUser.isOnline = false
+            currentUser.save()
+
+            response.clearCookie('token').json({ message: 'User logged out' })
+        })
+        .catch((error) => {
+            response.status(400).json({ error })
+        })
 }
 
 
@@ -71,7 +71,7 @@ exports.signUp = (request, response, next) => {
                 friendsList: [],
                 requestsReceived: [],
                 requestsSent: [],
-                isOnline: false,
+                isOnline: true,
                 currentRoom: 0,
             })
             user.save()
@@ -99,8 +99,7 @@ exports.logIn = (request, response, next) => {
         .then((user) => {
             if (!user) {
                 return response.status(401).json({ message: 'Adresse mail ou mot de passe incorrect.' })
-            }
-
+            } 
 
             bcrypt.compare(request.body.password, user.password)
                 .then((passwordValid) => {
@@ -113,6 +112,8 @@ exports.logIn = (request, response, next) => {
                         process.env.TOKENKEY,
                         { expiresIn: '24h', algorithm: 'HS256' })
 
+                    user.isOnline = true
+                    user.save()
 
                     response.cookie('token', token, { httpOnly: true, sameSite: 'strict' })
                     response.status(200).json({ message: "User succesfully logged in!" })
