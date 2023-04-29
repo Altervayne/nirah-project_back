@@ -1,5 +1,6 @@
 const http = require('http')
 const app = require('./app')
+const socketio = require('socket.io');
 
 if (process.env.NODE_ENV !== 'production') {
     require('dotenv').config();
@@ -47,6 +48,15 @@ const errorHandler = (error) => {
 
 
 const server = http.createServer(app)
+const io = socketio(server, {
+    cors: {
+        origin: process.env.CLIENTADDRESS,
+        methods: ["GET", "POST"],
+        credentials: true,
+    }
+})
+
+require('./socket')(io)
 
 server.on('error', errorHandler)
 server.on('listening', () => {
