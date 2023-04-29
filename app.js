@@ -6,7 +6,12 @@ const socketio = require('socket.io')
 const mongoose = require('mongoose')
 const userRoutes = require('./routes/user')
 
-
+const corsOptions = {
+    origin: process.env.CLIENTADDRESS,
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
+    allowedHeaders: ['Origin', 'X-Requested-With', 'Content', 'Accept', 'Content-Type', 'Authorization'],
+    credentials: true
+}
 
 
 if (process.env.NODE_ENV !== 'production') {
@@ -17,7 +22,7 @@ if (process.env.NODE_ENV !== 'production') {
 
 const app = express();
 
-app.use(cors())
+app.use(cors(corsOptions))
 app.use(cookieParser())
 
 
