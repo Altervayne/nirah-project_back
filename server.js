@@ -1,6 +1,7 @@
 const http = require('http')
 const app = require('./app')
 const socketio = require('socket.io');
+const auth = require('./middleware/auth')
 
 if (process.env.NODE_ENV !== 'production') {
     require('dotenv').config();
@@ -22,8 +23,6 @@ const normalizePort = (port) => {
 
 const port = normalizePort(process.env.PORT || '4200')
 app.set('port', port)
-
-
 
 const errorHandler = (error) => {
     if (error.syscall !== 'listen') {
@@ -56,6 +55,9 @@ const io = socketio(server, {
     }
 })
 
+
+
+io.use(auth.socket)
 require('./socket')(io)
 
 server.on('error', errorHandler)

@@ -5,7 +5,8 @@ if (process.env.NODE_ENV !== 'production') {
 
 
 exports.joinRoom = async (socket, users, io) => {
-    const { userId, username } = socket.auth
+    const userId = socket.userId
+    const username = socket.username
     const { room } = socket.handshake.query
     const roomDocument = await Room.findOne({ name: room });
 
@@ -43,8 +44,7 @@ exports.joinRoom = async (socket, users, io) => {
 
 
 exports.sendMessage = (socket, users, io) => async (message) => {
-    const { userId, username } = socket.auth
-    const { room } = users[socket.id]
+    const { userId, username, room } = users[socket.id]
     const roomDocument = await Room.findOne({ name: room })
 
     const newMessage = {
