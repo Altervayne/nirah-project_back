@@ -31,7 +31,7 @@ exports.http = async (request, response, next) => {
 
 
 
-exports.sockets = async (socket, next, data) => {
+exports.socket = async (socket, next, data) => {
     try {
         if (!socket.request.cookies.token) {
             throw new Error('Authentication token not found, access denied.')

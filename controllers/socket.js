@@ -1,26 +1,91 @@
 if (process.env.NODE_ENV !== 'production') {
-    require('dotenv').config();
+    require('dotenv').config()
 }
 
 
 
-exports.joinRoom = (socket, users, io) => (data) => {
-    const { username, room } = data;
-    users[socket.id] = { username, room };
+exports.joinRoom = async (socket, users, io) => {
+    const { userId, username } = socket.auth
+    const { room } = socket.handshake.query
+    const roomDocument = await Room.findOne({ name: room });
 
-    socket.join(room);
-    socket.to(room).broadcast.emit('userJoined', username);
-};
-  
-exports.sendMessage = (socket, users, io) => (message) => {
-    const { username, room } = users[socket.id];
 
-    io.to(room).emit('message', { username, message });
-};
-  
-exports.disconnect = (socket, users, io) => () => {
-    const { username, room } = users[socket.id];
+    const roomExists = io.sockets.adapter.rooms[room];
+    if (!roomExists) {
+        io.sockets.adapter.rooms[room] = {
+            sockets: {},
+            length: 0,
+        }
+    }
 
-    socket.to(room).broadcast.emit('userLeft', username);
-    delete users[socket.id];
-};
+
+    socket.join(room)
+    users[socket.id] = { userId, username, room }
+    socket.to(room).broadcast.emit('userJoined', username)
+
+        
+    if (!roomDocument) {
+        const newRoom = new Room({
+            name: room,
+            members: [{ userId: userId, username: username }],
+            messages: [],
+        })
+        await newRoom.save()
+
+    } else {
+        if (!roomDocument.members.some(member => member.userId === userId)) {
+            roomDocument.members.push({ userId: userId, username: username })
+            await roomDocument.save()
+        }
+    }
+}
+
+
+
+exports.sendMessage = (socket, users, io) => async (message) => {
+    const { userId, username } = socket.auth
+    const { room } = users[socket.id]
+    const roomDocument = await Room.findOne({ name: room })
+
+    const newMessage = {
+        body: message,
+        sender: {
+            userId: userId,
+            username: username
+        },
+        createdAt: new Date(),
+    }
+            
+    io.to(room).emit("message", newMessage)
+
+
+    if (roomDocument) {
+        roomDocument.messages.push(newMessage)
+        await roomDocument.save()
+    }
+      
+}
+
+
+
+exports.disconnect = async (socket, users, io) => {
+    const { userId, username, room } = users[socket.id]
+    const roomDocument = await Room.findOne({ name: room })
+
+    socket.to(room).broadcast.emit('userLeft', username)
+    delete users[socket.id]
+
+    if (roomDocument) {
+        roomDocument.members = roomDocument.members.filter(member => member.userId !== userId)
+        await roomDocument.save()
+
+        if (roomDocument.members.length === 0) {
+            await Room.deleteOne({ _id: roomDocument._id })
+        }
+    }
+
+    const roomExists = io.sockets.adapter.rooms[room];
+    if (roomExists && roomExists.length === 0) {
+        delete io.sockets.adapter.rooms[room]
+    }
+}

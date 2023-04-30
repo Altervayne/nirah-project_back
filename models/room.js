@@ -6,7 +6,7 @@ const ObjectId = mongoose.Types.ObjectId
 
 const roomSchema = mongoose.Schema({
     name: { type: Number, required: true, unique: true },
-    members: { type: [ObjectId], required: true },
+    members: { type: [Object], required: true },
     messages: { type: [Object], required: true }
 })
 
