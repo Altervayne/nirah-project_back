@@ -53,8 +53,6 @@ exports.socket = async (socket, next, data) => {
             username: username
         }
 
-        console.log(socket.auth)
-
         next()
     } catch (error) {
         next(new Error('Authentication failed.'))

@@ -19,7 +19,9 @@ exports.init = (server) => {
 }
 
 function onConnection(socket) {
-    console.log(`Socket connected: ${socket.id}`)
+    console.log(`Socket successfully connected: ${socket.id}`)
+    console.log(`Connected user: ${socket.auth.username}`)
+    console.log(`userId: ${socket.auth.userId}`)
 
 
     socket.on('joinRoom', (data) => {
@@ -35,7 +37,7 @@ function onConnection(socket) {
     })
 
     socket.on('disconnect', () => {
-        console.log(`Socket disconnected: ${socket.id}`)
+        console.log(`Socket successfully disconnected: ${socket.id}`)        
     })
 
     socket.on('error', (error) => {

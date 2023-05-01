@@ -47,6 +47,8 @@ exports.joinRoom = async (socket, io, users, data) => {
             await roomDocument.save()
         }
     }
+
+    console.log(`User ${username} has joined room ${room}.`)
 }
 
 
@@ -108,4 +110,6 @@ exports.leaveRoom = async (socket, io, users, data) => {
     if (roomExists && roomExists.length === 0) {
         delete io.sockets.adapter.rooms[room]
     }
+
+    console.log(`User ${username} has left room ${room}.`)
 }
