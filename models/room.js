@@ -5,14 +5,14 @@ const ObjectId = mongoose.Types.ObjectId
 
 
 const roomSchema = mongoose.Schema({
-    name: { type: Number, required: true, unique: true },
+    name: { type: String, required: true, unique: true },
     members: { type: [Object], required: true },
     messages: { type: [Object], required: true }
 })
 
 
 
-userSchema.plugin(uniqueValidator)
+roomSchema.plugin(uniqueValidator)
 
 
 

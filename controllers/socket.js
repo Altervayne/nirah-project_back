@@ -1,14 +1,22 @@
+const Room = require('../models/room')
+
+
 if (process.env.NODE_ENV !== 'production') {
     require('dotenv').config()
 }
 
 
 
-exports.joinRoom = async (socket, users, io) => {
-    const userId = socket.userId
-    const username = socket.username
-    const { room } = socket.handshake.query
+exports.joinRoom = async (socket, io, users, data) => {
+    const userId = socket.auth.userId
+    const username = socket.auth.username
+    const room = data.roomId
     const roomDocument = await Room.findOne({ name: room });
+
+    if (!io || !io.sockets || !io.sockets.adapter) {
+        console.error("Error: io is not defined or initialized correctly")
+        return
+    }
 
 
     const roomExists = io.sockets.adapter.rooms[room];
@@ -22,7 +30,7 @@ exports.joinRoom = async (socket, users, io) => {
 
     socket.join(room)
     users[socket.id] = { userId, username, room }
-    socket.to(room).broadcast.emit('userJoined', username)
+    io.to(room).emit('userJoined', username)
 
         
     if (!roomDocument) {
@@ -43,7 +51,13 @@ exports.joinRoom = async (socket, users, io) => {
 
 
 
-exports.sendMessage = (socket, users, io) => async (message) => {
+exports.sendMessage = async (socket, io, users, data) => {
+    if (!users[socket.id]) {
+        console.log(`User with socket id ${socket.id} is not in any room.`)
+        return
+    }
+    
+
     const { userId, username, room } = users[socket.id]
     const roomDocument = await Room.findOne({ name: room })
 
@@ -68,11 +82,17 @@ exports.sendMessage = (socket, users, io) => async (message) => {
 
 
 
-exports.disconnect = async (socket, users, io) => {
+exports.leaveRoom = async (socket, io, users, data) => {
+    if (!users[socket.id]) {
+        console.log(`User with socket id ${socket.id} is not in any room.`)
+        return
+    }
+
+
     const { userId, username, room } = users[socket.id]
     const roomDocument = await Room.findOne({ name: room })
 
-    socket.to(room).broadcast.emit('userLeft', username)
+    io.to(room).emit('userJoined', username)
     delete users[socket.id]
 
     if (roomDocument) {

@@ -33,11 +33,11 @@ exports.http = async (request, response, next) => {
 
 exports.socket = async (socket, next, data) => {
     try {
-        if (!socket.request.cookies.token) {
+        if (!socket.handshake.headers.cookie) {
             throw new Error('Authentication token not found, access denied.')
         }
 
-        const token = socket.request.cookies.token
+        const token = socket.handshake.headers.cookie.split('=')[1]
         const decodedToken = jwtoken.verify(token, process.env.TOKENKEY, { algorithms: ['HS256'] })
         const userId = decodedToken.userId
 
