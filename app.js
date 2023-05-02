@@ -5,6 +5,7 @@ const socketio = require('socket.io')
 
 const mongoose = require('mongoose')
 const userRoutes = require('./routes/user')
+const roomRoutes = requite('./routes/room')
 
 const corsOptions = {
     origin: process.env.CLIENTADDRESS,
@@ -41,6 +42,7 @@ app.use(express.json())
 
 
 app.use('/api/auth', userRoutes)
+app.use('/api/chat', roomRoutes)
 
 
 

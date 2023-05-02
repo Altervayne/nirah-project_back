@@ -31,6 +31,7 @@ exports.joinRoom = async (socket, io, users, data) => {
     socket.join(room)
     users[socket.id] = { userId, username, room }
     io.to(room).emit('userJoined', username)
+    console.log(`User ${username} has joined room ${room}.`)
 
         
     if (!roomDocument) {
@@ -46,9 +47,7 @@ exports.joinRoom = async (socket, io, users, data) => {
             roomDocument.members.push({ userId: userId, username: username })
             await roomDocument.save()
         }
-    }
-
-    console.log(`User ${username} has joined room ${room}.`)
+    }    
 }
 
 
@@ -96,6 +95,7 @@ exports.leaveRoom = async (socket, io, users, data) => {
 
     io.to(room).emit('userJoined', username)
     delete users[socket.id]
+    console.log(`User ${username} has left room ${room}.`)
 
     if (roomDocument) {
         roomDocument.members = roomDocument.members.filter(member => member.userId !== userId)
@@ -110,6 +110,4 @@ exports.leaveRoom = async (socket, io, users, data) => {
     if (roomExists && roomExists.length === 0) {
         delete io.sockets.adapter.rooms[room]
     }
-
-    console.log(`User ${username} has left room ${room}.`)
 }
