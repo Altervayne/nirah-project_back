@@ -6,19 +6,32 @@ if (process.env.NODE_ENV !== 'production') {
 
 
 
-exports.getCurrentRoomInfo = (request, response, next) => {
-    const roomName = request.params.name
+exports.getCurrentRoomInfo = async (request, response, next) => {
+    const roomName = request.params.id
 
-    Room.findOne({ name: roomName })
-        .then((currentRoom) => {
-            const currentRoomInfo = {
-                name: currentRoom.name,
-                members: currentRoom.members,
-                messages: currentRoom.messages
-            }
-            response.status(201).json( currentRoomInfo )
-        })
-        .catch((error) => {response.status(400).json({ error })})
+    console.log(`Requested room is: Room ${roomName}`)
+
+    const currentRoom = await Room.findOne({ name: roomName })
+    
+    if(!currentRoom) {
+        console.log("Room doesn't exist, creating.")
+
+        const currentRoomInfo = {
+            members: [],
+            messages: []
+        }
+
+        response.status(201).json( currentRoomInfo )
+    } else {
+        console.log("Room exists, sending data.")
+
+        const currentRoomInfo = {
+            members: currentRoom.members,
+            messages: currentRoom.messages
+        }
+
+        response.status(201).json( currentRoomInfo )
+    }
 }
 
 

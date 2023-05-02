@@ -15,6 +15,9 @@ exports.getCurrentUserInfo = (request, response, next) => {
         .then((currentUser) => {
             const currentUserInfo = {
                 username: currentUser.username,
+                friendsList: currentUser.friendsList,
+                requestsReceived: currentUser.requestsReceived,
+                requestsSent: currentUser.requestsSent
             }
             response.status(201).json( currentUserInfo )
         })

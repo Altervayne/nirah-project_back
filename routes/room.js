@@ -5,7 +5,7 @@ const roomControl = require('../controllers/room')
 
 
 
-router.get('/room/:name', auth.http,  roomControl.getCurrentRoomInfo)
+router.get('/:id', auth.http, roomControl.getCurrentRoomInfo)
 
 
 
