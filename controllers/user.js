@@ -140,21 +140,28 @@ exports.logIn = (request, response, next) => {
 
 
 exports.requestFriend = (request, response, next) => {
-    const userId = request.auth.userId
+    const currentUser = { userId: request.auth.userId, username: request.auth.username }
+    
 
-    User.findOne({ username: request.params.id })
+    User.findOne({ _id: request.params.id })
         .then((targetUser) => {
-            const requestedUser = targetUser
+            const requestedUserDocument = targetUser
+            const requestedUser = { userId: request.params.id, username: requestedUserDocument.username }
+
+            console.log("---------------------------------------")
+            console.log("requestedUser object is:")
+            console.log(requestedUser)
+            console.log("---------------------------------------")
 
             // We make sure to prevent any rogue requests by checking if the requesting
             // user isn't already in the requested user's lists
-            if (userId in requestedUser.requestsReceived) {
+            if (currentUser.userId in requestedUserDocument.requestsReceived) {
                 return response.status(400).json({ message: "Vous avez déjà envoyé une demande d'ajout à cet utilisateur." })
             }
-            if (userId in requestedUser.requestsSent) {
+            if (currentUser.userId in requestedUserDocument.requestsSent) {
                 return response.status(400).json({ message: "Cet utilisateur vous a déjà envoyé une demande d'ajout." })
             }
-            if (userId in requestedUser.friendsList) {
+            if (currentUser.userId in requestedUserDocument.friendsList) {
                 return response.status(400).json({ message: "Cet utilisateur est déjà votre ami." })
             }
 
@@ -162,20 +169,34 @@ exports.requestFriend = (request, response, next) => {
             // received array and add the requested User to the current User's requests
             // sent array
             else {
-                requestedUser.requestsReceived.push(userId)
+                requestedUserDocument.requestsReceived.push(currentUser)
 
-                User.findOne({ _id: userId })
-                    .then((currentUser) => {
-                        currentUser.requestsSent.push(requestedUser._id)
-                        currentUser.save()
+                User.findOne({ _id: currentUser.userId })
+                    .then((user) => {
+                        const requestingUserDocument = user
+
+                        requestingUserDocument.requestsSent.push(requestedUser)
+                        requestingUserDocument.save()
+                    })
+                    .catch((error) => {
+                        console.log(error)
+                        response.status(400).json({ error })
                     })
             }
 
             // We then save to MongoDB
-            requestedUser.save()
+            requestedUserDocument.save()
                 .then(
                     response.status(200).json({ message: "Demande d'ajout envoyée avec succès !"})
                 )
+                .catch((error) => {
+                    console.log(error)
+                    response.status(400).json({ error })
+                })
+        })
+        .catch((error) => {
+            console.log(error)
+            response.status(400).json({ error })
         })
 }
 

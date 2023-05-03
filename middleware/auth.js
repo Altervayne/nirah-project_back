@@ -13,6 +13,7 @@ exports.http = async (request, response, next) => {
         const decodedToken = jwtoken.verify(token, process.env.TOKENKEY, { algorithms: ['HS256'] })
         const userId = decodedToken.userId
 
+
         const authenticadedUser = await User.findOne({ _id: userId })
         const username = authenticadedUser.username
 

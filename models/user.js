@@ -8,9 +8,9 @@ const userSchema = mongoose.Schema({
     email: { type: String, required: true, unique: true },
     username: { type: String, required: true, unique: true },
     password: { type: String, required: true },
-    friendsList: { type: [ObjectId], required: true },
-    requestsReceived: { type: [ObjectId], required: true },
-    requestsSent: { type: [ObjectId], required: true },
+    friendsList: { type: [Object], required: true },
+    requestsReceived: { type: [Object], required: true },
+    requestsSent: { type: [Object], required: true },
     isOnline: { type: Boolean, required: true },
     currentRoom: { type: Number, required: true }
 })
