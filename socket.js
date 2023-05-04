@@ -1,4 +1,5 @@
-const socketControllers = require('./controllers/socket')
+const socketRoom = require('./controllers/socketRoom')
+const socketFriends = require('./controllers/socketFriends')
 const socketio = require('socket.io')
 const auth = require('./middleware/auth')
 const users = {}
@@ -24,17 +25,40 @@ function onConnection(socket) {
     console.log(`userId: ${socket.auth.userId}`)
 
 
-    socket.on('joinRoom', (data) => {
-        socketControllers.joinRoom(socket, io, users, data)
-    })
+    /* Basic Join/Leave room controllers */
 
-    socket.on('sendMessage', (data) => {
-        socketControllers.sendMessage(socket, io, users, data)
+    socket.on('joinRoom', (data) => {
+        socketRoom.joinRoom(socket, io, users, data)
     })
 
     socket.on('leaveRoom'), (data) => {
-        socketControllers.leaveRoom(socket, io, users, data)
+        socketRoom.leaveRoom(socket, io, users, data)
     }
+
+
+    /* Room messaging controllers */
+
+    socket.on('sendMessage', (data) => {
+        socketRoom.sendMessage(socket, io, users, data)
+    })
+
+
+    /* Friend requests controllers */
+
+    socket.on('addFriend', (data) => {
+        socketFriends.addFriend(socket, io, users, data)
+    })
+
+    socket.on('acceptFriend', (data) => {
+        socketFriends.acceptFriend(socket, io, users, data)
+    })
+
+    socket.on('rejectFriend', (data) => {
+        socketFriends.rejectFriend(socket, io, users, data)
+    })
+
+
+    /* Basic Disconnect/Error controllers */
 
     socket.on('disconnect', (data) => {
         console.log(`Socket successfully disconnected: ${socket.id}`)        
