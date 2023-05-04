@@ -13,6 +13,7 @@ exports.joinRoom = async (socket, io, users, data) => {
     const room = data.roomId
     const roomDocument = await Room.findOne({ name: room });
 
+
     if (!io || !io.sockets || !io.sockets.adapter) {
         console.error("Error: io is not defined or initialized correctly")
         return
@@ -63,7 +64,7 @@ exports.sendMessage = async (socket, io, users, data) => {
     const roomDocument = await Room.findOne({ name: room })
 
     const newMessage = {
-        body: message,
+        body: data.message,
         sender: {
             userId: userId,
             username: username
@@ -93,7 +94,7 @@ exports.leaveRoom = async (socket, io, users, data) => {
     const { userId, username, room } = users[socket.id]
     const roomDocument = await Room.findOne({ name: room })
 
-    io.to(room).emit('userJoined', username)
+    io.to(room).emit('userLeft', username)
     delete users[socket.id]
     console.log(`User ${username} has left room ${room}.`)
 

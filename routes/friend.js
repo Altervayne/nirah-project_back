@@ -12,7 +12,7 @@ router.post('/rejectRequest/:id', auth.http, friendControl.rejectRequest)
 
 
 // Check for OPTIONS request made by CORS Preflight so we can validate it
-router.options('/', userControl.validatePreflight)
+router.options('/', friendControl.validatePreflight)
 
 
 

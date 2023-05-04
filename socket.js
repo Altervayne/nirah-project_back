@@ -2,6 +2,7 @@ const socketRoom = require('./controllers/socketRoom')
 const socketFriends = require('./controllers/socketFriends')
 const socketio = require('socket.io')
 const auth = require('./middleware/auth')
+const userIdToSocketIdMap = new Map()
 const users = {}
 let io
 
@@ -23,6 +24,7 @@ function onConnection(socket) {
     console.log(`Socket successfully connected: ${socket.id}`)
     console.log(`Connected user: ${socket.auth.username}`)
     console.log(`userId: ${socket.auth.userId}`)
+    userIdToSocketIdMap.set(socket.auth.userId, socket.id)
 
 
     /* Basic Join/Leave room controllers */
@@ -31,9 +33,9 @@ function onConnection(socket) {
         socketRoom.joinRoom(socket, io, users, data)
     })
 
-    socket.on('leaveRoom'), (data) => {
+    socket.on('leaveRoom', (data) => {
         socketRoom.leaveRoom(socket, io, users, data)
-    }
+    })
 
 
     /* Room messaging controllers */
@@ -45,22 +47,15 @@ function onConnection(socket) {
 
     /* Friend requests controllers */
 
-    socket.on('addFriend', (data) => {
-        socketFriends.addFriend(socket, io, users, data)
-    })
-
-    socket.on('acceptFriend', (data) => {
-        socketFriends.acceptFriend(socket, io, users, data)
-    })
-
-    socket.on('rejectFriend', (data) => {
-        socketFriends.rejectFriend(socket, io, users, data)
+    socket.on('friendRequest', (data) => {
+        socketFriends.friendRequest(socket, io, userIdToSocketIdMap, data)
     })
 
 
     /* Basic Disconnect/Error controllers */
 
-    socket.on('disconnect', (data) => {
+    socket.on('disconnect', () => {
+        userIdToSocketIdMap.delete(socket.auth.userId)
         console.log(`Socket successfully disconnected: ${socket.id}`)        
     })
 

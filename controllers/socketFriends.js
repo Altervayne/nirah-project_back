@@ -7,18 +7,39 @@ if (process.env.NODE_ENV !== 'production') {
 
 
 
-exports.addFriend = async (socket, io, users, data) => {
-       
-}
+exports.friendRequest = async (socket, io, userIdToSocketIdMap, data) => {
+    const userId = socket.auth.userId
+    const username = socket.auth.username
+    const targetUser = data.userId
+    const requestType = data.requestType
+
+    console.log("---------------------------------------------")
+    console.log("userIdToSocketIdMap Map is:")
+    console.log(userIdToSocketIdMap)
+    console.log("---------------------------------------------")
+
+    const validTypes = ["send", "accept", "reject"]
+
+    if (validTypes.includes(requestType)) {
+        
+        const targetUserSocket = userIdToSocketIdMap.get(targetUser)
+
+        console.log("Attempting to emit request to target socket:")
+        console.log(targetUserSocket)
 
 
+        // If the requested user is connected, emit the "sendRequest" event exclusively to them using the to() method
+        if (targetUserSocket) {
+            io.to(targetUserSocket).emit(`${requestType}Request`, { userId: userId, username: username })
 
-exports.acceptFriend = async (socket, io, users, data) => {
-      
-}
+            return
+        }
 
+        console.log("Failed, targetUserSocket is a falsy value")
+    } else {
+        console.log("Request type is invalid. Request type must be 'send', 'accept' or 'reject'")
+        io.to(socket).emit("error", { message: "Request type is invalid. Request type must be 'send', 'accept' or 'reject'" })
 
-
-exports.rejectFriend = async (socket, io, users, data) => {
-
+        return
+    }  
 }
