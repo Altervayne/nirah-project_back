@@ -11,6 +11,8 @@ router.get('/logout', auth.http, userControl.logOut)
 router.post('/signup', userControl.signUp)
 router.post('/login', userControl.logIn)
 router.post('/sendRequest/:id', auth.http, userControl.requestFriend)
+router.post('/acceptRequest/:id', auth.http, userControl.acceptFriend)
+router.post('/rejectRequest/:id', auth.http, userControl.rejectFriend)
 
 
 
