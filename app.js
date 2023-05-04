@@ -43,6 +43,7 @@ app.use(express.json())
 
 app.use('/api/auth', userRoutes)
 app.use('/api/chatroom', roomRoutes)
+app.use('/api/friends', roomRoutes)
 
 
 

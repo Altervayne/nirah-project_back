@@ -32,8 +32,11 @@ function onConnection(socket) {
         socketControllers.sendMessage(socket, io, users, data)
     })
 
-    socket.on('disconnect', (data) => {
+    socket.on('leaveRoom'), (data) => {
         socketControllers.leaveRoom(socket, io, users, data)
+    }
+
+    socket.on('disconnect', (data) => {
         console.log(`Socket successfully disconnected: ${socket.id}`)        
     })
 
