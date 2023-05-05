@@ -5,6 +5,8 @@ const friendControl = require('../controllers/friend')
 
 
 
+router.get('/', auth.http, friendControl.getAllFriends)
+router.get('/:id', auth.http, friendControl.getOneFriend)
 router.post('/sendRequest/:id', auth.http, friendControl.sendRequest)
 router.post('/acceptRequest/:id', auth.http, friendControl.acceptRequest)
 router.post('/rejectRequest/:id', auth.http, friendControl.rejectRequest)

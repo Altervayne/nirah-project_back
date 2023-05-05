@@ -197,6 +197,50 @@ exports.rejectRequest = (request, response, next) => {
 
 
 
+exports.getAllFriends = async (request, response, next) => {
+    const userId = request.auth.userId
+
+    try {
+        const currentUser = await User.findOne({ _id: userId }).populate('friendsList', 'username isOnline currentRoom')
+        const friendsStatusesArray = currentUser.friendsList.map((friend) => {
+            return {
+                userId: friend.userId,
+                username: friend.username,
+                isOnline: friend.isOnline,
+                currentRoom: friend.currentRoom
+            }
+        })
+
+        response.status(200).json({ friendsStatusesArray })
+    } catch (error) {
+        response.status(400).json({ error })
+    }
+}
+
+
+
+exports.getOneFriend = async (request, response, next) => {
+    const userId = request.auth.userId
+
+    User.findOne({ _id: request.params.id })
+        .then((targetFriend) => {
+            const friendData = {
+                userId: targetFriend.userId,
+                username: targetFriend.username,
+                isOnline: targetFriend.isOnline,
+                currentRoom: targetFriend.currentRoom
+            }
+
+            response.status(200).json({ friendData })
+        })
+        .catch((error) => {
+            console.log(error)
+            response.status(400).json({ error })
+        })
+}
+
+
+
 exports.validatePreflight = (request, response, next) => {
     response.status(200).json({
         message: 'Preflight request validated'

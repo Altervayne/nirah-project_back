@@ -26,27 +26,6 @@ exports.getCurrentUserInfo = (request, response, next) => {
 
 
 
-exports.getFriendsStatuses = async (request, response, next) => {
-    const userId = request.auth.userId
-
-    try {
-        const currentUser = await User.findOne({ _id: userId }).populate('friendsList', 'username isOnline currentRoom')
-        const friendsStatusesArray = currentUser.friendsList.map((friend) => {
-            return {
-                username: friend.username,
-                isOnline: friend.isOnline,
-                currentRoom: friend.currentRoom
-            }
-        })
-
-        response.status(200).json({ friendsStatusesArray })
-    } catch (error) {
-        response.status(400).json({ error })
-    }
-}
-
-
-
 exports.logOut = async (request, response) => {
     const userId = request.auth.userId
 
