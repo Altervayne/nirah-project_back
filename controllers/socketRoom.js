@@ -72,14 +72,12 @@ exports.sendMessage = async (socket, io, users, data) => {
         createdAt: new Date(),
     }
             
-    io.to(room).emit("message", newMessage)
-
+    socket.broadcast.to(room).emit("message", newMessage)
 
     if (roomDocument) {
         roomDocument.messages.push(newMessage)
         await roomDocument.save()
-    }
-      
+    }   
 }
 
 
