@@ -146,16 +146,22 @@ exports.leaveRoom = async (socket, io, users, userIdToSocketIdMap, data) => {
     const { userId, username, room } = users[socket.id]
     const roomDocument = await Room.findOne({ name: room })
 
-    io.to(room).emit('userLeft', username)
+
+    socket.broadcast.to(room).emit('userLeft', { userId: userId, username: username })
     delete users[socket.id]
     console.log(`User ${username} has left room ${room}.`)
+
 
     if (roomDocument) {
         roomDocument.members = roomDocument.members.filter(member => member.userId !== userId)
         await roomDocument.save()
 
         if (roomDocument.members.length === 0) {
+            locks.lockRoomName(room)
+
             await Room.deleteOne({ _id: roomDocument._id })
+
+            locks.unlockRoomName(room)
         }
     }
 
