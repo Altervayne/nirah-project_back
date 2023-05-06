@@ -102,6 +102,9 @@ exports.joinRoom = async (socket, io, users, userIdToSocketIdMap, data) => {
         io.to(socketId).emit('joinRoom',  { userId: userId, username: username });
     })
 
+    currentUserDocument.currentRoom = room
+    await currentUserDocument.save()
+
     console.log(`User ${username} has joined socket room ${room}.`)
 }
 
@@ -145,10 +148,15 @@ exports.leaveRoom = async (socket, io, users, userIdToSocketIdMap, data) => {
 
     const { userId, username, room } = users[socket.id]
     const roomDocument = await Room.findOne({ name: room })
+    const currentUserDocument = await User.findOne({ _id: userId })
 
 
     socket.broadcast.to(room).emit('userLeft', { userId: userId, username: username })
     delete users[socket.id]
+
+    currentUserDocument.currentRoom = 0
+    currentUserDocument.save()
+    
     console.log(`User ${username} has left room ${room}.`)
 
 

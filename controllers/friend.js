@@ -200,19 +200,11 @@ exports.rejectRequest = (request, response, next) => {
 exports.getAllFriends = async (request, response, next) => {
     const userId = request.auth.userId
 
-    console.log(`Request for user ${request.auth.username}'s entire friends list received`)
-
     try {
         const currentUser = await User.findOne({ _id: userId })
         const friendIds = currentUser.friendsList.map(friend => friend.userId)
         const friendsArray = await User.find({ _id: { $in: friendIds }})
                                             .select('userId username isOnline currentRoom')
-
-        console.log('------------------------------------------')
-        console.log("friendsArray object is:")
-        console.log(friendsArray)
-        console.log('------------------------------------------')
-
 
         response.status(200).json(friendsArray)
     } catch (error) {
