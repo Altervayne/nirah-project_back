@@ -27,14 +27,16 @@ function onConnection(socket) {
     userIdToSocketIdMap.set(socket.auth.userId, socket.id)
 
 
+    socketFriends.friendConnectionUpdate(socket, io, userIdToSocketIdMap, 'connected')
+
     /* Basic Join/Leave room controllers */
 
     socket.on('joinRoom', (data) => {
-        socketRoom.joinRoom(socket, io, users, data)
+        socketRoom.joinRoom(socket, io, users, userIdToSocketIdMap, data)
     })
 
     socket.on('leaveRoom', (data) => {
-        socketRoom.leaveRoom(socket, io, users, data)
+        socketRoom.leaveRoom(socket, io, users, userIdToSocketIdMap, data)
     })
 
 
@@ -54,8 +56,12 @@ function onConnection(socket) {
 
     /* Basic Disconnect/Error controllers */
 
-    socket.on('disconnect', () => {
+    socket.on('disconnect', async () => {
+
         userIdToSocketIdMap.delete(socket.auth.userId)
+        
+        await socketFriends.friendConnectionUpdate(socket, io, userIdToSocketIdMap, 'disconnected')
+
         console.log(`Socket successfully disconnected: ${socket.id}`)        
     })
 

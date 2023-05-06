@@ -43,3 +43,17 @@ exports.friendRequest = async (socket, io, userIdToSocketIdMap, data) => {
         return
     }  
 }
+
+exports.friendConnectionUpdate = async (socket, io, userIdToSocketIdMap, connectionState) => {
+    const userId = socket.auth.userId
+    const username = socket.auth.username
+
+    const currentUserDocument = await User.findOne({ _id: userId })
+
+    const currentUserFriendIds = currentUserDocument.friendsList.map(friend => friend.userId)
+    const friendSocketIds = currentUserFriendIds.map(userId => userIdToSocketIdMap.get(userId))
+
+    friendSocketIds.forEach(socketId => {
+        io.to(socketId).emit(connectionState, { userId: userId, username: username });
+    })
+}
