@@ -17,7 +17,8 @@ exports.getCurrentUserInfo = (request, response, next) => {
                 username: currentUser.username,
                 friendsList: currentUser.friendsList,
                 requestsReceived: currentUser.requestsReceived,
-                requestsSent: currentUser.requestsSent
+                requestsSent: currentUser.requestsSent,
+                currentRoom: currentUser.currentRoom
             }
             response.status(201).json( currentUserInfo )
         })

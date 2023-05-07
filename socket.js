@@ -1,3 +1,4 @@
+const socketUser = require('./controllers/socketUser')
 const socketRoom = require('./controllers/socketRoom')
 const socketFriends = require('./controllers/socketFriends')
 const socketio = require('socket.io')
@@ -26,7 +27,7 @@ function onConnection(socket) {
     console.log(`userId: ${socket.auth.userId}`)
     userIdToSocketIdMap.set(socket.auth.userId, socket.id)
 
-
+    socketUser.setUserOnline(socket, true)
     socketFriends.friendConnectionUpdate(socket, io, userIdToSocketIdMap, 'connected')
 
     /* Basic Join/Leave room controllers */
@@ -60,6 +61,7 @@ function onConnection(socket) {
 
         userIdToSocketIdMap.delete(socket.auth.userId)
         
+        socketUser.setUserOnline(socket, false)
         await socketFriends.friendConnectionUpdate(socket, io, userIdToSocketIdMap, 'disconnected')
 
         console.log(`Socket successfully disconnected: ${socket.id}`)        
