@@ -36,8 +36,8 @@ function onConnection(socket) {
         socketRoom.joinRoom(socket, io, users, userIdToSocketIdMap, data)
     })
 
-    socket.on('leaveRoom', (data) => {
-        socketRoom.leaveRoom(socket, io, users, userIdToSocketIdMap, data)
+    socket.on('leaveRoom', (data, callback) => {
+        socketRoom.leaveRoom(socket, io, users, data, callback)
     })
 
 

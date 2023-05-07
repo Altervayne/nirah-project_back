@@ -94,18 +94,24 @@ exports.joinRoom = async (socket, io, users, userIdToSocketIdMap, data) => {
 
 
 
-    socket.join(room)
-    users[socket.id] = { userId, username, room }
-    socket.broadcast.to(room).emit('userJoined', { userId: userId, username: username })
+    if(Object.values(users).some(user => user.userId === userId)) {
+        console.log(`User with userId ${userId} is already connected.`)
+    } else {
+        socket.join(room)
+        users[socket.id] = { userId, username, room }
+        socket.broadcast.to(room).emit('userJoined', { userId: userId, username: username })
 
-    friendSocketIds.forEach(socketId => {
-        io.to(socketId).emit('joinRoom',  { userId: userId, username: username });
-    })
+        friendSocketIds.forEach(socketId => {
+            io.to(socketId).emit('joinRoom',  { userId: userId, username: username });
+        })
 
+        console.log(`User ${username} has joined socket room ${room}.`)
+    }
+
+    
+    
     currentUserDocument.currentRoom = room
     await currentUserDocument.save()
-
-    console.log(`User ${username} has joined socket room ${room}.`)
 }
 
 
@@ -139,7 +145,7 @@ exports.sendMessage = async (socket, io, users, data) => {
 
 
 
-exports.leaveRoom = async (socket, io, users, userIdToSocketIdMap, data) => {
+exports.leaveRoom = async (socket, io, users, data, callback) => {
     if (!users[socket.id]) {
         console.log(`User with socket id ${socket.id} is not in any room.`)
         return
@@ -157,6 +163,7 @@ exports.leaveRoom = async (socket, io, users, userIdToSocketIdMap, data) => {
     currentUserDocument.currentRoom = 0
     currentUserDocument.save()
     
+    callback(true)
     console.log(`User ${username} has left room ${room}.`)
 
 
