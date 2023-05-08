@@ -37,7 +37,7 @@ function onConnection(socket) {
     })
 
     socket.on('leaveRoom', (data, callback) => {
-        socketRoom.leaveRoom(socket, io, users, data, callback)
+        socketRoom.leaveRoom(socket, io, users, userIdToSocketIdMap, data, callback)
     })
 
 

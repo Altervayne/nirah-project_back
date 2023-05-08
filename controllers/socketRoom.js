@@ -145,7 +145,7 @@ exports.sendMessage = async (socket, io, users, data) => {
 
 
 
-exports.leaveRoom = async (socket, io, users, data, callback) => {
+exports.leaveRoom = async (socket, io, users, userIdToSocketIdMap, data, callback) => {
     if (!users[socket.id]) {
         console.log(`User with socket id ${socket.id} is not in any room.`)
         return
@@ -156,16 +156,25 @@ exports.leaveRoom = async (socket, io, users, data, callback) => {
     const roomDocument = await Room.findOne({ name: room })
     const currentUserDocument = await User.findOne({ _id: userId })
 
+    const currentUserFriendIds = currentUserDocument.friendsList.map(friend => friend.userId)
+    const friendSocketIds = currentUserFriendIds.map(userId => userIdToSocketIdMap.get(userId))
+
+
 
     socket.broadcast.to(room).emit('userLeft', { userId: userId, username: username })
     delete users[socket.id]
 
     currentUserDocument.currentRoom = 0
-    currentUserDocument.save()
+    await currentUserDocument.save()
+
+    friendSocketIds.forEach(socketId => {
+        io.to(socketId).emit('joinRoom',  { userId: userId, username: username });
+    })
+
+
     
     callback(true)
     console.log(`User ${username} has left room ${room}.`)
-
 
     if (roomDocument) {
         roomDocument.members = roomDocument.members.filter(member => member.userId !== userId)
@@ -179,6 +188,8 @@ exports.leaveRoom = async (socket, io, users, data, callback) => {
             locks.unlockRoomName(room)
         }
     }
+
+    
 
     const roomExists = io.sockets.adapter.rooms[room];
     if (roomExists && roomExists.length === 0) {
