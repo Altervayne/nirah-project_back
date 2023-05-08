@@ -53,10 +53,12 @@ exports.logOut = async (request, response) => {
 
 
 exports.signUp = (request, response, next) => {
+    const lowerCaseEmail = request.body.email.toLowerCase()
+
     bcrypt.hash(request.body.password, 10)
         .then(hash => {
             const user = new User({
-                email: request.body.email,
+                email: lowerCaseEmail,
                 username: request.body.username,
                 password: hash,
                 friendsList: [],
@@ -67,7 +69,7 @@ exports.signUp = (request, response, next) => {
             })
             user.save()
                 .then(() => {
-                    User.findOne({ email: request.body.email })
+                    User.findOne({ email: lowerCaseEmail })
                     .then((user) => {
                         const token = jwtoken.sign(
                             { userId: user._id },
@@ -88,7 +90,9 @@ exports.signUp = (request, response, next) => {
 
 
 exports.logIn = (request, response, next) => {
-    User.findOne({ email: request.body.email })
+    const lowerCaseEmail = request.body.email.toLowerCase()
+
+    User.findOne({ email: lowerCaseEmail })
         .then((user) => {
             if (!user) {
                 return response.status(401).json({ message: 'Adresse mail ou mot de passe incorrect.' })
