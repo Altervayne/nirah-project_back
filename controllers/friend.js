@@ -206,7 +206,7 @@ exports.getAllFriends = async (request, response, next) => {
         const friendsArray = await User.find({ _id: { $in: friendIds }})
                                             .select('userId username isOnline currentRoom')
 
-        response.status(200).json(friendsArray)
+        response.status(200).json( friendsArray )
     } catch (error) {
         response.status(400).json({ error })
     }
@@ -220,13 +220,13 @@ exports.getOneFriend = async (request, response, next) => {
     User.findOne({ _id: request.params.id })
         .then((targetFriend) => {
             const friendData = {
-                userId: targetFriend.userId,
+                _id: targetFriend._id,
                 username: targetFriend.username,
                 isOnline: targetFriend.isOnline,
                 currentRoom: targetFriend.currentRoom
             }
 
-            response.status(200).json({ friendData })
+            response.status(200).json( friendData )
         })
         .catch((error) => {
             console.log(error)
