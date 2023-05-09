@@ -26,7 +26,7 @@ exports.joinRoom = async (socket, io, users, userIdToSocketIdMap, data) => {
     console.log(`User is ${username} with userId ${userId}`)
 
 
-    while(locks.isLocked(room)) {
+    while(locks.isLocked(room, "rooms")) {
         console.log(`Room ${room} is already being created, wait...`)
         await sleep(500)
     }
@@ -39,16 +39,21 @@ exports.joinRoom = async (socket, io, users, userIdToSocketIdMap, data) => {
     const currentUserFriendIds = currentUserDocument.friendsList.map(friend => friend.userId)
     const friendSocketIds = currentUserFriendIds.map(userId => userIdToSocketIdMap.get(userId))
 
-    
-
-    console.log("Room document is (if null, it didn't exist beforehand):")
-    console.log(roomDocument)
+    const serverMessage = {
+        body: `${username} a rejoint le salon`,
+        sender: {  
+            userId: 0,
+            username: "server"
+        },
+        createdAt: new Date(),
+        fromServer: true
+    }
 
 
 
     try {
         if (!roomDocument) {
-            locks.lockRoomName(room)
+            locks.lock(room, "rooms")
 
 
             const newRoom = new Room({
@@ -59,12 +64,22 @@ exports.joinRoom = async (socket, io, users, userIdToSocketIdMap, data) => {
             await newRoom.save()
 
 
-            locks.unlockRoomName(room)
+            locks.unlock(room, "rooms")
     
         } else {
+            while(locks.isLocked(userId, "users")) {
+                console.log(`User with ID ${userId} is already being added to the room, wait...`)
+                await sleep(500)
+            }
+
             if (!roomDocument.members.some(member => member.userId === userId)) {
+                locks.lock(userId, "users")
+
                 roomDocument.members.push({ userId: userId, username: username })
+                roomDocument.messages.push(serverMessage)
                 await roomDocument.save()
+
+                locks.unlock(userId, "users")
             }
         }
     } catch (error) {
@@ -100,6 +115,7 @@ exports.joinRoom = async (socket, io, users, userIdToSocketIdMap, data) => {
         socket.join(room)
         users[socket.id] = { userId, username, room }
         socket.broadcast.to(room).emit('userJoined', { userId: userId, username: username })
+        socket.broadcast.to(room).emit('message', serverMessage)
 
         friendSocketIds.forEach(socketId => {
             io.to(socketId).emit('joinRoom',  { userId: userId, username: username });
@@ -133,6 +149,7 @@ exports.sendMessage = async (socket, io, users, data) => {
             username: username
         },
         createdAt: new Date(),
+        fromServer: false
     }
             
     socket.broadcast.to(room).emit("message", newMessage)
@@ -159,16 +176,27 @@ exports.leaveRoom = async (socket, io, users, userIdToSocketIdMap, data, callbac
     const currentUserFriendIds = currentUserDocument.friendsList.map(friend => friend.userId)
     const friendSocketIds = currentUserFriendIds.map(userId => userIdToSocketIdMap.get(userId))
 
+    const serverMessage = {
+        body: `${username} a quitté le salon`,
+        sender: {  
+            userId: 0,
+            username: "server"
+        },
+        createdAt: new Date(),
+        fromServer: true
+    }
+
 
 
     socket.broadcast.to(room).emit('userLeft', { userId: userId, username: username })
+    socket.broadcast.to(room).emit('message', serverMessage)
     delete users[socket.id]
 
     currentUserDocument.currentRoom = 0
     await currentUserDocument.save()
 
     friendSocketIds.forEach(socketId => {
-        io.to(socketId).emit('joinRoom',  { userId: userId, username: username });
+        io.to(socketId).emit('leaveRoom',  { userId: userId, username: username });
     })
 
 
@@ -178,14 +206,15 @@ exports.leaveRoom = async (socket, io, users, userIdToSocketIdMap, data, callbac
 
     if (roomDocument) {
         roomDocument.members = roomDocument.members.filter(member => member.userId !== userId)
+        roomDocument.messages.push(serverMessage)
         await roomDocument.save()
 
         if (roomDocument.members.length === 0) {
-            locks.lockRoomName(room)
+            locks.lock(room, "rooms")
 
             await Room.deleteOne({ _id: roomDocument._id })
 
-            locks.unlockRoomName(room)
+            locks.unlock(room, "rooms")
         }
     }
 

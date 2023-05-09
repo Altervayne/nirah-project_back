@@ -1,9 +1,13 @@
-let locks = []
+let locks = {
+    rooms: [],
+    users: []
+}
 
 
 
-exports.isLocked = (roomName) => {
-    if(locks.includes(roomName)) {
+
+exports.isLocked = (value, type) => {
+    if(locks[type].includes(value)) {
         return true
     } else {
         return false
@@ -12,22 +16,22 @@ exports.isLocked = (roomName) => {
 
 
 
-exports.lockRoomName = (roomName) => {
-    if(locks.includes(roomName)) {
-        console.log(`Room name ${roomName} is already locked.`)
+exports.lock = (value, type) => {
+    if(locks[type].includes(value)) {
+        console.log(`Value "${value}" for type "${type}" is already locked.`)
     } else {
-        locks.push(roomName)
+        locks[type].push(value)
     }
 }
 
 
 
-exports.unlockRoomName = (roomName) => {
-    if(!locks.includes(roomName)) {
-        console.log(`Room name ${roomName} isn't locked.`)
+exports.unlock = (value, type) => {
+    if(!locks[type].includes(value)) {
+        console.log(`Value "${value}" for type "${type}" is not locked.`)
     } else {
-        const newLocks = locks.filter(lock => lock !== roomName)
+        const newLocks = locks[type].filter(lock => lock !== value)
 
-        locks = newLocks
+        locks[type] = newLocks
     }
 }
