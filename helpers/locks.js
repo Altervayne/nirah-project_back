@@ -21,6 +21,7 @@ exports.lock = (value, type) => {
         console.log(`Value "${value}" for type "${type}" is already locked.`)
     } else {
         locks[type].push(value)
+        console.log(`Value "${value}" for type "${type}" has been locked.`)
     }
 }
 
@@ -33,5 +34,6 @@ exports.unlock = (value, type) => {
         const newLocks = locks[type].filter(lock => lock !== value)
 
         locks[type] = newLocks
+        console.log(`Value "${value}" for type "${type}" has been unlocked.`)
     }
 }

@@ -67,18 +67,22 @@ exports.joinRoom = async (socket, io, users, userIdToSocketIdMap, data) => {
             locks.unlock(room, "rooms")
     
         } else {
+            let userIsNotInRoom = !roomDocument.members.some(member => member.userId === userId)
+
             while(locks.isLocked(userId, "users")) {
                 console.log(`User with ID ${userId} is already being added to the room, wait...`)
                 await sleep(500)
+
+                userIsNotInRoom = false
             }
 
-            if (!roomDocument.members.some(member => member.userId === userId)) {
+            if (userIsNotInRoom) {
                 locks.lock(userId, "users")
 
                 roomDocument.members.push({ userId: userId, username: username })
                 roomDocument.messages.push(serverMessage)
                 await roomDocument.save()
-
+                
                 locks.unlock(userId, "users")
             }
         }
