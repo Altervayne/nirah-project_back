@@ -1,4 +1,5 @@
 const { MongoError } = require('mongodb')
+const socketFriends = require('./controllers/socketFriends')
 const Room = require('../models/room')
 const User = require('../models/user')
 const locks = require('../helpers/locks')
@@ -15,18 +16,6 @@ function sleep(ms) {
     return new Promise(resolve => setTimeout(resolve, ms))
 }
 
-
-
-exports.mapFriendIds = async (currentUserDocument, userIdToSocketIdMap) => {
-    /* We get the current user's friend Ids from their friendsList */
-    const currentUserFriendIds = currentUserDocument.friendsList.map(friend => friend.userId)
-    
-    /* And map each of those Ids to matching currently connected socket users */
-    const friendSocketIds = currentUserFriendIds.map(userId => userIdToSocketIdMap.get(userId))
-
-    /* We return the friends socket Ids */
-    return { friendSocketIds }
-}
 
 
 
@@ -52,7 +41,7 @@ exports.joinRoom = async (socket, io, users, userIdToSocketIdMap, data) => {
     /* We get the necessary documents and a map of the user's friends' Ids to their socket Ids */
     const currentUserDocument = await User.findOne({ _id: userId })
     const roomDocument = await Room.findOne({ name: room })
-    const friendSocketIds = await this.mapFriendIds(currentUserDocument, userIdToSocketIdMap)
+    const friendSocketIds = await socketFriends.mapFriendIds(currentUserDocument, userIdToSocketIdMap)
 
     /* We create the server message that will be emitted */
     const serverMessage = {
@@ -218,7 +207,7 @@ exports.leaveRoom = async (socket, io, users, userIdToSocketIdMap, data, callbac
     /* We get the necessary documents and a map of the user's friends' Ids to their socket Ids */
     const roomDocument = await Room.findOne({ name: room })
     const currentUserDocument = await User.findOne({ _id: userId })
-    const friendSocketIds = await this.mapFriendIds(currentUserDocument, userIdToSocketIdMap)
+    const friendSocketIds = await socketFriends.mapFriendIds(currentUserDocument, userIdToSocketIdMap)
 
     /* We create the server message that will be emitted */
     const serverMessage = {
