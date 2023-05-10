@@ -1,8 +1,14 @@
+/* Importing Schemas */
+const User = require('./models/user')
+/* Importing Controllers */
 const socketUser = require('./controllers/socketUser')
 const socketRoom = require('./controllers/socketRoom')
 const socketFriends = require('./controllers/socketFriends')
+/* Importing socket.io */
 const socketio = require('socket.io')
+/* Importing middleware */
 const auth = require('./middleware/auth')
+/* Declaring required objects and variables */
 const userIdToSocketIdMap = new Map()
 const users = {}
 let io
@@ -68,7 +74,8 @@ function onConnection(socket) {
     socket.on('disconnect', async () => {
 
         /* Get user's friends' Ids and map them to their socket IDs, then send leaveRoom event to notify them */
-        const friendSocketIds = await socketFriends.mapFriendIds(socket.auth.userId, userIdToSocketIdMap)
+        const currentUserDocument = await User.findOne({ _id: socket.auth.userId })
+        const friendSocketIds = await socketFriends.mapFriendIds(currentUserDocument.friendsList, userIdToSocketIdMap)
         friendSocketIds.forEach(socketId => {
             io.to(socketId).emit('leaveRoom',  { userId: socket.auth.userId, username: socket.auth.username });
         })

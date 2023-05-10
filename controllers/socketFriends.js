@@ -7,9 +7,9 @@ if (process.env.NODE_ENV !== 'production') {
 
 
 
-exports.mapFriendIds = async (currentUserDocument, userIdToSocketIdMap) => {
+exports.mapFriendIds = async (friendsList, userIdToSocketIdMap) => {
     /* We get the current user's friend Ids from their friendsList */
-    const currentUserFriendIds = currentUserDocument.friendsList.map(friend => friend.userId)
+    const currentUserFriendIds = friendsList.map(friend => friend.userId)
 
     /* And map each of those Ids to matching currently connected socket users */
     const friendSocketIds = currentUserFriendIds.map(userId => userIdToSocketIdMap.get(userId))
@@ -63,7 +63,7 @@ exports.friendConnectionUpdate = async (socket, io, userIdToSocketIdMap, connect
 
     /* We get the required user document and map the friends' userIds to their socketIds*/
     const currentUserDocument = await User.findOne({ _id: userId })
-    const friendSocketIds = await this.mapFriendIds(currentUserDocument, userIdToSocketIdMap)
+    const friendSocketIds = await this.mapFriendIds(currentUserDocument.friendsList, userIdToSocketIdMap)
 
     /* We notify each friend of the current user's connection state */
     friendSocketIds.forEach(socketId => {

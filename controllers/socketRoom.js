@@ -41,7 +41,7 @@ exports.joinRoom = async (socket, io, users, userIdToSocketIdMap, data) => {
     /* We get the necessary documents and a map of the user's friends' Ids to their socket Ids */
     const currentUserDocument = await User.findOne({ _id: userId })
     const roomDocument = await Room.findOne({ name: room })
-    const friendSocketIds = await socketFriends.mapFriendIds(currentUserDocument, userIdToSocketIdMap)
+    const friendSocketIds = await socketFriends.mapFriendIds(currentUserDocument.friendsList, userIdToSocketIdMap)
 
     /* We create the server message that will be emitted */
     const serverMessage = {
@@ -207,7 +207,7 @@ exports.leaveRoom = async (socket, io, users, userIdToSocketIdMap, data, callbac
     /* We get the necessary documents and a map of the user's friends' Ids to their socket Ids */
     const roomDocument = await Room.findOne({ name: room })
     const currentUserDocument = await User.findOne({ _id: userId })
-    const friendSocketIds = await socketFriends.mapFriendIds(currentUserDocument, userIdToSocketIdMap)
+    const friendSocketIds = await socketFriends.mapFriendIds(currentUserDocument.friendsList, userIdToSocketIdMap)
 
     /* We create the server message that will be emitted */
     const serverMessage = {
