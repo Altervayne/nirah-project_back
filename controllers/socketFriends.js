@@ -15,7 +15,7 @@ exports.mapFriendIds = async (currentUserDocument, userIdToSocketIdMap) => {
     const friendSocketIds = currentUserFriendIds.map(userId => userIdToSocketIdMap.get(userId))
 
     /* We return the friends socket Ids */
-    return { friendSocketIds }
+    return friendSocketIds
 }
 
 
