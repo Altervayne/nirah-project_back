@@ -30,6 +30,8 @@ function onConnection(socket) {
     socketUser.setUserOnline(socket, true)
     socketFriends.friendConnectionUpdate(socket, io, userIdToSocketIdMap, 'connected')
 
+
+    
     /* Basic Join/Leave room controllers */
 
     socket.on('joinRoom', (data) => {
@@ -41,11 +43,13 @@ function onConnection(socket) {
     })
 
 
+
     /* Room messaging controllers */
 
     socket.on('sendMessage', (data) => {
         socketRoom.sendMessage(socket, io, users, data)
     })
+
 
 
     /* Friend requests controllers */
@@ -55,15 +59,29 @@ function onConnection(socket) {
     })
 
 
+
     /* Basic Disconnect/Error controllers */
 
     socket.on('disconnect', async () => {
 
+        /* Get user's friends' Ids and map them to their socket IDs, then send leaveRoom event to notify them */
+        const friendSocketIds = await socketRoom.mapFriendIds(socket.auth.userId, userIdToSocketIdMap)
+        friendSocketIds.forEach(socketId => {
+            io.to(socketId).emit('leaveRoom',  { userId: socket.auth.userId, username: socket.auth.username });
+        })
+
+
+        /* Delete disconnecting user's entry in users object and userId to socketId map */
         userIdToSocketIdMap.delete(socket.auth.userId)
+        delete users[socket.id]
         
+
+        /* Update disconnecting user's online state in DB and notify friends */
         socketUser.setUserOnline(socket, false)
         await socketFriends.friendConnectionUpdate(socket, io, userIdToSocketIdMap, 'disconnected')
 
+
+        /* Indicate that disconnection is complete */
         console.log(`Socket successfully disconnected: ${socket.id}`)        
     })
 

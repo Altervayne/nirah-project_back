@@ -17,13 +17,26 @@ function sleep(ms) {
 
 
 
+exports.mapFriendIds = async (userId, userIdToSocketIdMap) => {
+    const currentUserDocument = await User.findOne({ _id: userId })
+
+    const currentUserFriendIds = currentUserDocument.friendsList.map(friend => friend.userId)
+    const friendSocketIds = currentUserFriendIds.map(userId => userIdToSocketIdMap.get(userId))
+
+    return friendSocketIds
+}
+
+
+
 exports.joinRoom = async (socket, io, users, userIdToSocketIdMap, data) => {
     const userId = socket.auth.userId
     const username = socket.auth.username
     const room = `${data.roomId}`
 
+    console.log("--------------------------------------------------------")
     console.log(`Attempted to join room ${room}`)
     console.log(`User is ${username} with userId ${userId}`)
+    console.log("--------------------------------------------------------")
 
 
     while(locks.isLocked(room, "rooms")) {
@@ -113,8 +126,12 @@ exports.joinRoom = async (socket, io, users, userIdToSocketIdMap, data) => {
 
 
 
-    if(Object.values(users).some(user => user.userId === userId)) {
-        console.log(`User with userId ${userId} is already connected.`)
+    if(Object.values(users).some(user => user.userId === userId && user.room === room)) {
+        console.log(`User with userId ${userId} is already connected to room ${room}.`)
+        console.log("--------------------------------------------------------")
+        console.log("Current user entry in Users object is:")
+        console.log(users[socket.id])
+        console.log("--------------------------------------------------------")
     } else {
         socket.join(room)
         users[socket.id] = { userId, username, room }
@@ -168,17 +185,24 @@ exports.sendMessage = async (socket, io, users, data) => {
 
 exports.leaveRoom = async (socket, io, users, userIdToSocketIdMap, data, callback) => {
     if (!users[socket.id]) {
+        console.log("--------------------------------------------------------")
         console.log(`User with socket id ${socket.id} is not in any room.`)
+        console.log("--------------------------------------------------------")
+        console.log("Users object is:")
+        console.log(users)
+        console.log("--------------------------------------------------------")
+        console.log("Current user entry in Users object is:")
+        console.log(users[socket.id])
+        console.log("--------------------------------------------------------")
+
         return
     }
 
 
     const { userId, username, room } = users[socket.id]
-    const roomDocument = await Room.findOne({ name: room })
-    const currentUserDocument = await User.findOne({ _id: userId })
 
-    const currentUserFriendIds = currentUserDocument.friendsList.map(friend => friend.userId)
-    const friendSocketIds = currentUserFriendIds.map(userId => userIdToSocketIdMap.get(userId))
+    const roomDocument = await Room.findOne({ name: room })
+    const friendSocketIds = await this.mapFriendIds(userId, userIdToSocketIdMap)
 
     const serverMessage = {
         body: `${username} a quitté le salon`,
