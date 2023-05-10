@@ -19,7 +19,7 @@ function sleep(ms) {
 
 
 
-exports.joinRoom = async (socket, io, users, userIdToSocketIdMap, data) => {
+exports.joinRoom = async (socket, io, users, userIdToSocketIdMap, data, callback) => {
     /* We initialize the following constants out of the user's auth token */
     const userId = socket.auth.userId
     const username = socket.auth.username
@@ -28,6 +28,8 @@ exports.joinRoom = async (socket, io, users, userIdToSocketIdMap, data) => {
     /* We check if the server has correctly initialized the io object */
     if (!io || !io.sockets || !io.sockets.adapter) {
         console.error("Error: io is not defined or initialized correctly")
+
+        callback(false)
         return
     }
 
@@ -117,6 +119,7 @@ exports.joinRoom = async (socket, io, users, userIdToSocketIdMap, data) => {
         if (error instanceof MongoError && error.code === 11000) {
             socket.emit("sameRoomName", { message: "Room with same name was being created at the same time, wait for connection..." })
         } else {
+            callback(false)
             console.error(error)
         }
     }
@@ -159,9 +162,10 @@ exports.joinRoom = async (socket, io, users, userIdToSocketIdMap, data) => {
 
     
 
-    /* And finally, we set the current user's room in their document */
+    /* And finally, we set the current user's room in their document and return true to the callback function */
     currentUserDocument.currentRoom = room
-    await currentUserDocument.save()
+    currentUserDocument.save()
+    callback(true)
 }
 
 

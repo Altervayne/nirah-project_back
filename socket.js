@@ -47,8 +47,8 @@ function onConnection(socket) {
 
 
     /* Basic Join/Leave room controllers */
-    socket.on('joinRoom', (data) => {
-        socketRoom.joinRoom(socket, io, users, userIdToSocketIdMap, data)
+    socket.on('joinRoom', (data, callback) => {
+        socketRoom.joinRoom(socket, io, users, userIdToSocketIdMap, data, callback)
     })
     socket.on('leaveRoom', (data, callback) => {
         socketRoom.leaveRoom(socket, io, users, userIdToSocketIdMap, data, callback)
