@@ -68,7 +68,7 @@ function onConnection(socket) {
     socket.on('disconnect', async () => {
 
         /* Get user's friends' Ids and map them to their socket IDs, then send leaveRoom event to notify them */
-        const friendSocketIds = await socketRoom.mapFriendIds(socket.auth.userId, userIdToSocketIdMap)
+        const friendSocketIds = await socketFriends.mapFriendIds(socket.auth.userId, userIdToSocketIdMap)
         friendSocketIds.forEach(socketId => {
             io.to(socketId).emit('leaveRoom',  { userId: socket.auth.userId, username: socket.auth.username });
         })
