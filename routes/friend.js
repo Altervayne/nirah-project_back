@@ -10,6 +10,7 @@ router.get('/:id', auth.http, friendControl.getOneFriend)
 router.post('/sendRequest/:id', auth.http, friendControl.sendRequest)
 router.post('/acceptRequest/:id', auth.http, friendControl.acceptRequest)
 router.post('/rejectRequest/:id', auth.http, friendControl.rejectRequest)
+router.post('/remove/:id', auth.http, friendControl.removeFriend)
 
 
 

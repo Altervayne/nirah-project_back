@@ -28,7 +28,7 @@ exports.friendRequest = async (socket, io, userIdToSocketIdMap, data) => {
     const requestType = data.requestType
 
     /* We initialize an array containing the currently accepted types of requests */
-    const validTypes = ["send", "accept", "reject"]
+    const validTypes = ["sendRequest", "acceptRequest", "rejectRequest", "remove"]
 
 
 
@@ -40,7 +40,7 @@ exports.friendRequest = async (socket, io, userIdToSocketIdMap, data) => {
 
         // If the requested user is connected, we emit the "sendRequest" event exclusively to them
         if (targetUserSocket) {
-            io.to(targetUserSocket).emit(`${requestType}Request`, { userId: userId, username: username })
+            io.to(targetUserSocket).emit(`${requestType}`, { userId: userId, username: username })
             return
         }
     }
