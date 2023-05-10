@@ -1,5 +1,5 @@
 const { MongoError } = require('mongodb')
-const socketFriends = require('./controllers/socketFriends')
+const socketFriends = require('./socketFriends')
 const Room = require('../models/room')
 const User = require('../models/user')
 const locks = require('../helpers/locks')
