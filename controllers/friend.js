@@ -270,8 +270,10 @@ exports.getAllFriends = async (request, response, next) => {
     try {
         const currentUser = await User.findOne({ _id: userId })
         const friendIds = currentUser.friendsList.map(friend => friend.userId)
-        const friendsArray = await User.find({ _id: { $in: friendIds }})
+        const friendsDocumentsArray = await User.find({ _id: { $in: friendIds }})
                                             .select('_id username isOnline currentRoom')
+
+        const friendsArray = friendsDocumentsArray.map(friendDocument => friendDocument._doc)
 
         const friendsStatuses = friendsArray.map(friend => {
             const { _id, ...rest } = friend
