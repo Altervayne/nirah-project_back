@@ -9,6 +9,7 @@ router.get('/user', auth.http,  userControl.getCurrentUserInfo)
 router.get('/logout', auth.http, userControl.logOut)
 router.post('/signup', userControl.signUp)
 router.post('/login', userControl.logIn)
+router.delete('/delete', auth.http, userControl.delete)
 
 
 
