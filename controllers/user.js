@@ -123,6 +123,29 @@ exports.logIn = (request, response, next) => {
 
 
 
+exports.delete = async (request, response, next) => {
+    const userId = request.auth.userId
+
+
+    
+    try { User.findOneAndDelete({ _id: userId }) }
+    catch (error) { response.status(400).json({ error }) }
+
+
+
+
+    try {
+        response.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate')
+        response.clearCookie('token')
+        response.status(200).json({ message: 'User has deleted their account' })
+    } catch {
+        console.log(error)
+        response.status(400).json({ error })
+    }  
+}
+
+
+
 exports.validatePreflight = (request, response, next) => {
     response.status(200).json({
         message: 'Preflight request validated'
