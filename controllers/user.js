@@ -125,14 +125,25 @@ exports.logIn = (request, response, next) => {
 
 exports.delete = async (request, response, next) => {
     const userId = request.auth.userId
-
-
-    
-    try { User.findOneAndDelete({ _id: userId }) }
-    catch (error) { response.status(400).json({ error }) }
+    const sentPassword = request.body.password
 
 
 
+    const userDocument = await User.findOne({ _id: userId })
+
+    if (!userDocument) {
+        response.status(400).json({ message: 'User not found' })
+    } else {
+        await bcrypt.compare(sentPassword, userDocument.password)
+                    .then((passwordValid) => {
+                        if (!passwordValid) {
+                            return response.status(401).json({ message: 'Mot de passe incorrect.' })
+                        } else {
+                            userDocument.deleteOne()
+                        }
+                    })
+                    .catch((error) => response.status(500).json({ message: 'Erreur serveur' }))
+    }
 
     try {
         response.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate')
@@ -140,7 +151,7 @@ exports.delete = async (request, response, next) => {
         response.status(200).json({ message: 'User has deleted their account' })
     } catch {
         console.log(error)
-        response.status(400).json({ error })
+        response.status(400).json({ message: 'Erreur lors de la suppression' })
     }  
 }
 
