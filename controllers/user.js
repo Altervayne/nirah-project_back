@@ -128,24 +128,55 @@ exports.delete = async (request, response, next) => {
     const sentPassword = request.body.password
 
 
-
+    /* We go and get the user's document in the DB */
     const userDocument = await User.findOne({ _id: userId })
 
+    /* If the user doesn't exist, we notify the client */
     if (!userDocument) {
         response.status(400).json({ message: 'User not found' })
-    } else {
-        await bcrypt.compare(sentPassword, userDocument.password)
-                    .then((passwordValid) => {
-                        if (!passwordValid) {
-                            return response.status(401).json({ message: 'Mot de passe incorrect.' })
-                        } else {
-                            userDocument.deleteOne()
-                        }
-                    })
-                    .catch((error) => response.status(500).json({ message: 'Erreur serveur' }))
     }
 
+    /* We check if the password is valid using bcrypt */
+    const passwordValid = await bcrypt.compare(sentPassword, userDocument.password)
+                                        .then((passwordValid) => {
+                                            return passwordValid
+                                        })
+                                        .catch((error) => response.status(500).json({ message: 'Erreur serveur' }))
+
+    /* If the provided password is invalid, we stop here and there and notify the client */
+    if (!passwordValid) {
+        response.status(401).json({ message: 'Mot de passe incorrect.' })
+    }
+
+
+
+    /* We map the Ids of each user in one of our current user's arrays to a corresponding array */
+    const friendIds = userFriends.map(friend => friend.userId)
+    const userRequestsReceivedIds = userRequestsReceived.map(user => user.userId)
+    const userRequestsSentIds = userRequestsSent.map(user => user.userId)
+
+    /* We then update in bulk the documents of each users in the current user's lists to take out the current user from their lists */
+    await User.updateMany(
+        { _id: { $in: friendIds } },
+        { $pull: { friendsList: { userId: userId } } }
+    )
+  
+    await User.updateMany(
+        { _id: { $in: userRequestsReceivedIds } },
+        { $pull: { requestsSent: { userId: userId } } }
+    )
+  
+    await User.updateMany(
+        { _id: { $in: userRequestsSentIds } },
+        { $pull: { requestsReceived: { userId: userId } } }
+    )
+
+
+    
+    /* We try to delete the current user, and catch any errors */
     try {
+        await userDocument.deleteOne()
+
         response.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate')
         response.clearCookie('token')
         response.status(200).json({ message: 'User has deleted their account' })
