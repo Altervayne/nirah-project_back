@@ -5,6 +5,7 @@ const roomControl = require('../controllers/room')
 
 
 
+router.update('/leave', auth.http, roomControl.leaveRoom)
 router.get('/:id', auth.http, roomControl.getCurrentRoomInfo)
 
 

@@ -232,10 +232,6 @@ exports.leaveRoom = async (socket, io, users, userIdToSocketIdMap, data, callbac
     socket.broadcast.to(room).emit('message', serverMessage)
     delete users[socket.id]
 
-    /* We update the user's document to indicate they are no longer in a room */
-    currentUserDocument.currentRoom = 0
-    await currentUserDocument.save()
-
     /* We notify their currently online friends that the current user isn't in a room anymore */
     friendSocketIds.forEach(socketId => {
         io.to(socketId).emit('leaveRoom',  { userId: userId, username: username });
