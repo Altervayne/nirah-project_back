@@ -1,3 +1,4 @@
+const User = require('../models/user')
 const Room = require('../models/room')
 
 if (process.env.NODE_ENV !== 'production') {
