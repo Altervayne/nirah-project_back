@@ -133,7 +133,7 @@ exports.delete = async (request, response, next) => {
 
     /* If the user doesn't exist, we notify the client */
     if (!userDocument) {
-        response.status(400).json({ message: 'User not found' })
+        response.status(404).json({ message: 'User not found' })
     }
 
     /* We check if the password is valid using bcrypt */
@@ -179,7 +179,7 @@ exports.delete = async (request, response, next) => {
 
         response.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate')
         response.clearCookie('token')
-        response.status(200).json({ message: 'User has deleted their account' })
+        response.status(202).json({ message: 'User has deleted their account' })
     } catch {
         console.log(error)
         response.status(400).json({ message: 'Erreur lors de la suppression' })
