@@ -70,7 +70,17 @@ function onConnection(socket) {
 
 
 
-    /* Basic Disconnect/Error controllers */
+    /* Basic Delete/Disconnect/Error controllers */
+    socket.on('deleteAccount', async () => {
+
+        /* Get user's friends' Ids and map them to their socket IDs, then send deleteAccount event to notify them */
+        const currentUserDocument = await User.findOne({ _id: socket.auth.userId })
+        const friendSocketIds = await socketFriends.mapFriendIds(currentUserDocument.friendsList, userIdToSocketIdMap)
+        friendSocketIds.forEach(socketId => {
+            io.to(socketId).emit('deleteAccount',  { userId: socket.auth.userId, username: socket.auth.username });
+        })
+        
+    })
     socket.on('disconnect', async () => {
 
         /* Get user's friends' Ids and map them to their socket IDs, then send leaveRoom event to notify them */
