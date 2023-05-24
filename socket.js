@@ -77,7 +77,7 @@ function onConnection(socket) {
         const currentUserDocument = await User.findOne({ _id: socket.auth.userId })
         const friendSocketIds = await socketFriends.mapFriendIds(currentUserDocument.friendsList, userIdToSocketIdMap)
         friendSocketIds.forEach(socketId => {
-            io.to(socketId).emit('deleteAccount',  { userId: socket.auth.userId, username: socket.auth.username });
+            io.to(socketId).emit('deleteAccount',  { userId: socket.auth.userId });
         })
         
     })
