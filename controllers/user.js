@@ -14,6 +14,7 @@ exports.getCurrentUserInfo = (request, response, next) => {
     User.findOne({ _id: userId })
         .then((currentUser) => {
             const currentUserInfo = {
+                email: currentUser.email,
                 username: currentUser.username,
                 friendsList: currentUser.friendsList,
                 requestsReceived: currentUser.requestsReceived,
