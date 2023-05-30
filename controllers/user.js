@@ -152,9 +152,9 @@ exports.delete = async (request, response, next) => {
 
 
     /* We map the Ids of each user in one of our current user's arrays to a corresponding array */
-    const friendIds = userFriends.map(friend => friend.userId)
-    const userRequestsReceivedIds = userRequestsReceived.map(user => user.userId)
-    const userRequestsSentIds = userRequestsSent.map(user => user.userId)
+    const friendIds = userDocument.friendsList.map(friend => friend.userId)
+    const userRequestsReceivedIds = userDocument.requestsReceived.map(user => user.userId)
+    const userRequestsSentIds = userDocument.requestsSent.map(user => user.userId)
 
     /* We then update in bulk the documents of each users in the current user's lists to take out the current user from their lists */
     await User.updateMany(
