@@ -189,6 +189,13 @@ exports.delete = async (request, response, next) => {
 
 
 
+exports.changePassword = async (request, response, next) => {
+    const userId = request.auth.userId
+
+}
+
+
+
 exports.validatePreflight = (request, response, next) => {
     response.status(200).json({
         message: 'Preflight request validated'
