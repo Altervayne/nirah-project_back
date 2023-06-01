@@ -195,26 +195,25 @@ exports.changePassword = async (request, response, next) => {
     const newPassword = request.body.newPassword
 
 
-
     const userDocument = await User.findOne({ _id: userId })
 
     bcrypt.compare(oldPassword, userDocument.password)
-                .then((passwordValid) => {
-                    if (!passwordValid) {
-                        return response.status(401).json({ message: 'Ancien mot de passe incorrect.' })
-                    }
+        .then((passwordValid) => {
+            if (!passwordValid) {
+                return response.status(401).json({ message: 'Ancien mot de passe incorrect.' })
+            }
 
 
 
-                    bcrypt.hash(newPassword, 10)
-                        .then(hash => {
-                            userDocument.password = hash
-                            userDocument.save()
+            bcrypt.hash(newPassword, 10)
+                .then(hash => {
+                    userDocument.password = hash
+                    userDocument.save()
 
-                            response.status(200).json({ message: 'Modification confirmée.' })
-                        })                   
-                })
-                .catch((error) => response.status(500).json({ error }))
+                    response.status(200).json({ message: 'Modification confirmée.' })
+                })                   
+        })
+        .catch((error) => response.status(500).json({ error }))
 }
 
 
