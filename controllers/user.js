@@ -53,8 +53,21 @@ exports.logOut = async (request, response) => {
 
 
 
-exports.signUp = (request, response, next) => {
+exports.signUp = async (request, response, next) => {
     const lowerCaseEmail = request.body.email.toLowerCase()
+
+    const sameUsernameExists = await User.findOne({ username: request.body.username })
+    const sameEmailExists = await User.findOne({ email: request.body.email.toLowerCase() })
+
+    if(sameUsernameExists) {
+        response.status(400).json({ message: `Ce nom d'utilisateur est déjà pris.` })
+
+        return
+    } else if(sameEmailExists) {
+        response.status(400).json({ message: `Cette adresse mail est déjà utilisée.` })
+
+        return
+    }
 
     bcrypt.hash(request.body.password, 10)
         .then(hash => {
@@ -118,7 +131,7 @@ exports.logIn = (request, response, next) => {
                     response.cookie('token', token, { httpOnly: true, sameSite: 'strict' })
                     response.status(200).json({ message: "User succesfully logged in!" })
                 })
-                .catch((error) => response.status(500).json({ error }))
+                .catch((error) => response.status(500).json({ message: 'Adresse mail ou mot de passe incorrect.' }))
         })
 }
 
