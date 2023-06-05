@@ -129,9 +129,9 @@ exports.logIn = (request, response, next) => {
 
                     response.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate')
                     response.cookie('token', token, { httpOnly: true, sameSite: 'strict' })
-                    response.status(200).json({ message: "User succesfully logged in!" })
+                    response.status(200).json({ message: "User successfully logged in!" })
                 })
-                .catch((error) => response.status(500).json({ message: 'Adresse mail ou mot de passe incorrect.' }))
+                .catch((error) => response.status(401).json({ message: 'Adresse mail ou mot de passe incorrect.' }))
         })
 }
 

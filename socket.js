@@ -33,6 +33,22 @@ exports.init = (server) => {
 
 
 function onConnection(socket) {
+    /* We set up a timeout system to avoid idle connections remaining for longer than 3 minutes */
+    let timeoutId
+    const timeoutDuration = 180000
+
+    const startTimeout = () => {
+        timeoutId = setTimeout(() => {
+            socket.disconnect(true)
+        }, timeoutDuration)
+    }
+
+    const resetTimeout = () => {
+        clearTimeout(timeoutId)
+        startTimeout()
+    }
+
+
     /* We log the succesful connection in the console and map the user's Id to their socketId */
     console.log(`Socket successfully connected: ${socket.id}`)
     console.log(`Connected user: ${socket.auth.username}`)
@@ -40,6 +56,7 @@ function onConnection(socket) {
     userIdToSocketIdMap.set(socket.auth.userId, socket.id)
 
 
+    
     /* We set the user's online state to true and notify their friends that they have come online */
     socketUser.setUserOnline(socket, true)
     socketFriends.friendConnectionUpdate(socket, io, userIdToSocketIdMap, 'connected')
@@ -49,9 +66,11 @@ function onConnection(socket) {
     /* Basic Join/Leave room controllers */
     socket.on('joinRoom', (data, callback) => {
         socketRoom.joinRoom(socket, io, users, userIdToSocketIdMap, data, callback)
+        resetTimeout()
     })
     socket.on('leaveRoom', (data, callback) => {
         socketRoom.leaveRoom(socket, io, users, userIdToSocketIdMap, data, callback)
+        resetTimeout()
     })
 
 
@@ -59,6 +78,7 @@ function onConnection(socket) {
     /* Room messaging controllers */
     socket.on('sendMessage', (data) => {
         socketRoom.sendMessage(socket, io, users, data)
+        resetTimeout()
     })
 
 
@@ -66,6 +86,7 @@ function onConnection(socket) {
     /* Friend requests controllers */
     socket.on('friendRequest', (data) => {
         socketFriends.friendRequest(socket, io, userIdToSocketIdMap, data)
+        resetTimeout()
     })
 
 
@@ -107,5 +128,10 @@ function onConnection(socket) {
     socket.on('error', (error) => {
         console.error(`Error with socket ${socket.id}:`, error)
     })
+
+
+
+    /* We start the timeout system */
+    startTimeout()
 }
 
