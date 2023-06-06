@@ -35,7 +35,7 @@ exports.init = (server) => {
 function onConnection(socket) {
     /* We set up a timeout system to avoid idle connections remaining for longer than 3 minutes */
     let timeoutId
-    const timeoutDuration = 180000
+    const timeoutDuration = 360000
 
     const startTimeout = () => {
         timeoutId = setTimeout(() => {
