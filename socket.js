@@ -65,34 +65,35 @@ function onConnection(socket) {
 
     /* Basic Join/Leave room controllers */
     socket.on('joinRoom', (data, callback) => {
-        socketRoom.joinRoom(socket, io, users, userIdToSocketIdMap, data, callback)
         resetTimeout()
+        socketRoom.joinRoom(socket, io, users, userIdToSocketIdMap, data, callback)
     })
     socket.on('leaveRoom', (data, callback) => {
-        socketRoom.leaveRoom(socket, io, users, userIdToSocketIdMap, data, callback)
         resetTimeout()
+        socketRoom.leaveRoom(socket, io, users, userIdToSocketIdMap, data, callback)
     })
 
 
 
     /* Room messaging controllers */
     socket.on('sendMessage', (data) => {
-        socketRoom.sendMessage(socket, io, users, data)
         resetTimeout()
+        socketRoom.sendMessage(socket, io, users, data)
     })
 
 
 
     /* Friend requests controllers */
     socket.on('friendRequest', (data) => {
-        socketFriends.friendRequest(socket, io, userIdToSocketIdMap, data)
         resetTimeout()
+        socketFriends.friendRequest(socket, io, userIdToSocketIdMap, data)
     })
 
 
 
     /* Basic Delete/Disconnect/Error controllers */
     socket.on('deleteAccount', async () => {
+        resetTimeout()
 
         /* Get user's friends' Ids and map them to their socket IDs, then send deleteAccount event to notify them */
         const currentUserDocument = await User.findOne({ _id: socket.auth.userId })
@@ -103,6 +104,7 @@ function onConnection(socket) {
         
     })
     socket.on('disconnect', async () => {
+        resetTimeout()
 
         /* Get user's friends' Ids and map them to their socket IDs, then send leaveRoom event to notify them */
         const currentUserDocument = await User.findOne({ _id: socket.auth.userId })
