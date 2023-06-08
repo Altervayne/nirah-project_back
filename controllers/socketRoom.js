@@ -171,34 +171,39 @@ exports.joinRoom = async (socket, io, users, userIdToSocketIdMap, data, callback
 
 
 exports.sendMessage = async (socket, io, users, data) => {
-    /* We first check if the user is in a room before sending the message */
-    if (!users[socket.id]) { return }
-    const { userId, username, room } = users[socket.id]
+    /* We check that the message isn't an empty string */
+    if(!data.message) {
+        return
+    } else {
+        /* We first check if the user is in a room before sending the message */
+        if (!users[socket.id]) { return }
+        const { userId, username, room } = users[socket.id]
 
-    /* We get the room's document to prepare to update it with the new message */
-    const roomDocument = await Room.findOne({ name: room })
+        /* We get the room's document to prepare to update it with the new message */
+        const roomDocument = await Room.findOne({ name: room })
 
-    /* We create the new message object and only keep the message's body from the request */
-    /* This ensures that the data included in the message and sent to other users is authentic */
-    /* And not a falsified date or falsified sender object */
-    const newMessage = {
-        body: data.message,
-        sender: {
-            userId: userId,
-            username: username
-        },
-        createdAt: new Date(),
-        fromServer: false
-    }
+        /* We create the new message object and only keep the message's body from the request */
+        /* This ensures that the data included in the message and sent to other users is authentic */
+        /* And not a falsified date or falsified sender object */
+        const newMessage = {
+            body: data.message,
+            sender: {
+                userId: userId,
+                username: username
+            },
+            createdAt: new Date(),
+            fromServer: false
+        }
 
-    /* We broadcast the message to the room */        
-    socket.broadcast.to(room).emit("message", newMessage)
+        /* We broadcast the message to the room */        
+        socket.broadcast.to(room).emit("message", newMessage)
 
-    /* We then push the message in the room document's messages array */
-    if (roomDocument) {
-        roomDocument.messages.push(newMessage)
-        await roomDocument.save()
-    }   
+        /* We then push the message in the room document's messages array */
+        if (roomDocument) {
+            roomDocument.messages.push(newMessage)
+            await roomDocument.save()
+        } 
+    } 
 }
 
 
